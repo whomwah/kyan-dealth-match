@@ -7,7 +7,17 @@ import {
   onPlayerJoin,
   useMultiplayerState,
 } from "playroomkit";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+
+// Detect if device is mobile/touch
+const isTouchDevice = () => {
+  if (typeof window === "undefined") return false;
+  return (
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0 ||
+    window.matchMedia("(pointer: coarse)").matches
+  );
+};
 import { Bullet } from "./Bullet";
 import { BulletHit } from "./BulletHit";
 import { CharacterController } from "./CharacterController";
@@ -15,18 +25,21 @@ import { Map } from "./Map";
 
 export const Experience = ({ downgradedPerformance = false }) => {
   const [players, setPlayers] = useState([]);
+  const isMobile = useMemo(() => isTouchDevice(), []);
+
   const start = async () => {
     // Start the game
     await insertCoin();
 
-    // Create a joystick controller for each joining player
+    // Create a joystick controller for each joining player (mobile only)
     onPlayerJoin((state) => {
-      // Joystick will only create UI for current player (myPlayer)
-      // For others, it will only sync their state
-      const joystick = new Joystick(state, {
-        type: "angular",
-        buttons: [{ id: "fire", label: "Fire" }],
-      });
+      // Only create joystick UI on mobile/touch devices
+      const joystick = isTouchDevice()
+        ? new Joystick(state, {
+            type: "angular",
+            buttons: [{ id: "fire", label: "Fire" }],
+          })
+        : null;
       const newPlayer = { state, joystick };
       state.setState("health", 100);
       state.setState("deaths", 0);
@@ -47,7 +60,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
 
   const [networkBullets, setNetworkBullets] = useMultiplayerState(
     "bullets",
-    []
+    [],
   );
   const [networkHits, setNetworkHits] = useMultiplayerState("hits", []);
 
@@ -86,6 +99,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
           state={state}
           userPlayer={state.id === myPlayer()?.id}
           joystick={joystick}
+          isMobile={isMobile}
           onKilled={onKilled}
           onFire={onFire}
           downgradedPerformance={downgradedPerformance}

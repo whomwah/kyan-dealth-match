@@ -2,10 +2,11 @@ import { Billboard, CameraControls, Text } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
 import { isHost } from "playroomkit";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { CharacterSoldier } from "./CharacterSoldier";
 const MOVEMENT_SPEED = 202;
 const FIRE_RATE = 380;
+export const MAX_LIVES = 3;
 export const WEAPON_OFFSET = {
   x: -0.2,
   y: 1.4,
@@ -16,6 +17,7 @@ export const CharacterController = ({
   state,
   joystick,
   userPlayer,
+  isMobile,
   onKilled,
   onFire,
   downgradedPerformance,
@@ -27,6 +29,65 @@ export const CharacterController = ({
   const [animation, setAnimation] = useState("Idle");
   const [weapon, setWeapon] = useState("AK");
   const lastShoot = useRef(0);
+  const [firePressed, setFirePressed] = useState(false);
+  const keysPressed = useRef({ w: false, a: false, s: false, d: false });
+  const facingAngle = useRef(0); // Track which direction character is facing
+
+  // Keyboard controls for movement (WASD) and firing (Space) - desktop only
+  useEffect(() => {
+    if (!userPlayer || isMobile) return;
+
+    const handleKeyDown = (e) => {
+      const key = e.key.toLowerCase();
+      if (key === "w" || key === "a" || key === "s" || key === "d") {
+        e.preventDefault();
+        keysPressed.current[key] = true;
+      }
+      if (e.code === "Space") {
+        e.preventDefault();
+        setFirePressed(true);
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      const key = e.key.toLowerCase();
+      if (key === "w" || key === "a" || key === "s" || key === "d") {
+        e.preventDefault();
+        keysPressed.current[key] = false;
+      }
+      if (e.code === "Space") {
+        setFirePressed(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [userPlayer, isMobile]);
+
+  // Calculate movement angle from WASD keys (desktop only)
+  // Camera looks from +Z toward origin, so:
+  // W (forward) = -Z, S (backward) = +Z, A (left) = -X, D (right) = +X
+  // The impulse uses sin(angle) for X and cos(angle) for Z
+  // atan2(x, z) gives angle where 0 = +Z direction
+  const getKeyboardAngle = () => {
+    if (isMobile) return null;
+    const keys = keysPressed.current;
+
+    let x = 0;
+    let z = 0;
+    if (keys.w) z -= 1;
+    if (keys.s) z += 1;
+    if (keys.a) x -= 1;
+    if (keys.d) x += 1;
+
+    if (x === 0 && z === 0) return null;
+    return Math.atan2(x, z);
+  };
 
   const scene = useThree((state) => state.scene);
   const spawnRandomly = () => {
@@ -78,7 +139,7 @@ export const CharacterController = ({
         playerWorldPos.x,
         playerWorldPos.y + 1.5,
         playerWorldPos.z,
-        true
+        true,
       );
     }
 
@@ -87,11 +148,24 @@ export const CharacterController = ({
       return;
     }
 
-    // Update player position based on joystick state
-    const angle = joystick.angle();
-    if (joystick.isJoystickPressed() && angle) {
+    // Update player position based on input method (mobile: joystick, desktop: keyboard)
+    let angle = null;
+    let isMoving = false;
+
+    if (isMobile && joystick) {
+      // Mobile: use joystick only
+      angle = joystick.angle();
+      isMoving = joystick.isJoystickPressed() && angle;
+    } else if (!isMobile && userPlayer) {
+      // Desktop: use keyboard only
+      angle = getKeyboardAngle();
+      isMoving = angle !== null;
+    }
+
+    if (isMoving && angle !== null) {
       setAnimation("Run");
       character.current.rotation.y = angle;
+      facingAngle.current = angle; // Remember facing direction
 
       // move character in its own direction
       const impulse = {
@@ -105,19 +179,20 @@ export const CharacterController = ({
       setAnimation("Idle");
     }
 
-    // Check if fire button is pressed
-    if (joystick.isPressed("fire")) {
+    // Check if fire button is pressed (mobile: joystick button, desktop: Space key)
+    const isFiring = isMobile ? joystick?.isPressed("fire") : firePressed;
+    if (isFiring) {
+      // Use current movement angle, or facing direction if standing still
+      const fireAngle = angle !== null ? angle : facingAngle.current;
       // fire
-      setAnimation(
-        joystick.isJoystickPressed() && angle ? "Run_Shoot" : "Idle_Shoot"
-      );
+      setAnimation(isMoving && angle !== null ? "Run_Shoot" : "Idle_Shoot");
       if (isHost()) {
         if (Date.now() - lastShoot.current > FIRE_RATE) {
           lastShoot.current = Date.now();
           const newBullet = {
             id: state.id + "-" + +new Date(),
             position: vec3(rigidbody.current.translation()),
-            angle,
+            angle: fireAngle,
             player: state.id,
           };
           onFire(newBullet);
@@ -161,17 +236,27 @@ export const CharacterController = ({
             const newHealth =
               state.state.health - other.rigidBody.userData.damage;
             if (newHealth <= 0) {
-              state.setState("deaths", state.state.deaths + 1);
+              const newDeaths = state.state.deaths + 1;
+              state.setState("deaths", newDeaths);
               state.setState("dead", true);
               state.setState("health", 0);
               rigidbody.current.setEnabled(false);
-              setTimeout(() => {
-                spawnRandomly();
-                rigidbody.current.setEnabled(true);
-                state.setState("health", 100);
-                state.setState("dead", false);
-              }, 2000);
               onKilled(state.id, other.rigidBody.userData.player);
+
+              // Check if player still has lives remaining
+              const livesRemaining = MAX_LIVES - newDeaths;
+              if (livesRemaining > 0) {
+                // Respawn after delay
+                setTimeout(() => {
+                  spawnRandomly();
+                  rigidbody.current.setEnabled(true);
+                  state.setState("health", 100);
+                  state.setState("dead", false);
+                }, 2000);
+              } else {
+                // Player is eliminated - mark as eliminated and don't respawn
+                state.setState("eliminated", true);
+              }
             } else {
               state.setState("health", newHealth);
             }
