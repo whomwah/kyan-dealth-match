@@ -1,17 +1,46 @@
 import { RigidBody, vec3 } from "@react-three/rapier";
 import { isHost } from "playroomkit";
-import { useEffect, useRef } from "react";
-import { MeshBasicMaterial } from "three";
+import { useEffect, useRef, useMemo } from "react";
+import { MeshBasicMaterial, LatheGeometry, Vector2 } from "three";
 import { WEAPON_OFFSET } from "./CharacterController";
 
 const BULLET_SPEED = 20;
 
 const bulletMaterial = new MeshBasicMaterial({
-  color: "hotpink",
+  color: "#1a1a1a",
   toneMapped: false,
 });
 
-bulletMaterial.color.multiplyScalar(42);
+// Create plug shape using lathe geometry
+const createPlugGeometry = () => {
+  const points = [];
+  // Flared base (pedestal)
+  points.push(new Vector2(0, 0));
+  points.push(new Vector2(0.09, 0));
+  points.push(new Vector2(0.09, 0.02));
+  points.push(new Vector2(0.08, 0.04));
+  // Narrow neck
+  points.push(new Vector2(0.04, 0.06));
+  points.push(new Vector2(0.04, 0.08));
+  points.push(new Vector2(0.04, 0.1));
+  // Bulge out quickly
+  points.push(new Vector2(0.08, 0.14));
+  points.push(new Vector2(0.085, 0.18));
+  // Maximum bulge
+  points.push(new Vector2(0.09, 0.22));
+  points.push(new Vector2(0.09, 0.26));
+  // Taper gradually toward tip
+  points.push(new Vector2(0.08, 0.29));
+  points.push(new Vector2(0.06, 0.32));
+  points.push(new Vector2(0.04, 0.34));
+  points.push(new Vector2(0.02, 0.355));
+  // Rounded tip
+  points.push(new Vector2(0, 0.36));
+
+  return new LatheGeometry(points, 16);
+};
+
+const plugGeometry = createPlugGeometry();
 
 export const Bullet = ({ player, angle, position, onHit }) => {
   const rigidbody = useRef();
@@ -51,9 +80,13 @@ export const Bullet = ({ player, angle, position, onHit }) => {
             damage: 10,
           }}
         >
-          <mesh position-z={0.25} material={bulletMaterial} castShadow>
-            <boxGeometry args={[0.05, 0.05, 0.5]} />
-          </mesh>
+          <mesh
+            position-z={0.25}
+            material={bulletMaterial}
+            castShadow
+            rotation-x={Math.PI / 2}
+            geometry={plugGeometry}
+          />
         </RigidBody>
       </group>
     </group>
