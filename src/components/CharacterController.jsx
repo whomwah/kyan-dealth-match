@@ -180,8 +180,8 @@ export const CharacterController = ({
       setAnimation("Idle");
     }
 
-    // Check if fire button is pressed (mobile: joystick button, desktop: Space key)
-    const isFiring = isMobile ? joystick?.isPressed("fire") : firePressed;
+    // Check if fire button is pressed (joystick fire button if available, otherwise keyboard Space)
+    const isFiring = joystick ? joystick.isPressed("fire") : firePressed;
     if (isFiring) {
       // Use current movement angle, or facing direction if standing still
       const fireAngle = angle !== null ? angle : facingAngle.current;

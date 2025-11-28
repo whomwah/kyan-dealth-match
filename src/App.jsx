@@ -30,8 +30,8 @@ function App() {
 
       // Set up player join handling
       onPlayerJoin((state) => {
-        // Always create Joystick for all players - Playroom handles UI visibility
-        // (only shows UI for myPlayer(), syncs state for all others)
+        // Create joystick for each player - UI only shows for myPlayer(),
+        // but we need the instance to read synced state from other players
         const joystick = new Joystick(state, {
           type: "angular",
           buttons: [{ id: "fire", label: "Fire" }],
