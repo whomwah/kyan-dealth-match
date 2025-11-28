@@ -1,4 +1,4 @@
-import { Environment } from "@react-three/drei";
+import { Environment, PerspectiveCamera } from "@react-three/drei";
 import { isStreamScreen, myPlayer, useMultiplayerState } from "playroomkit";
 import { useEffect, useState } from "react";
 
@@ -66,8 +66,22 @@ export const Experience = ({
   // Filter out players without valid profiles (prevents ghost players)
   const validPlayers = players.filter(({ state }) => state.state.profile?.name);
 
+  // Check if this is the stream screen (no local player)
+  const isStream = isStreamScreen();
+
   return (
     <>
+      {/* Fixed overhead camera for stream screen to show entire map */}
+      {isStream && (
+        <PerspectiveCamera
+          makeDefault
+          position={[0, 50, 35]}
+          fov={55}
+          near={1}
+          far={200}
+          rotation={[-Math.PI / 3, 0, 0]}
+        />
+      )}
       <Map />
       {validPlayers.map(({ state, joystick }, index) => (
         <CharacterController
