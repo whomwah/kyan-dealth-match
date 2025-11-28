@@ -75,8 +75,8 @@ export const Experience = ({
       {isStream && (
         <PerspectiveCamera
           makeDefault
-          position={[0, 50, 35]}
-          fov={55}
+          position={[0, 35, 25]}
+          fov={45}
           near={1}
           far={200}
           rotation={[-Math.PI / 3, 0, 0]}

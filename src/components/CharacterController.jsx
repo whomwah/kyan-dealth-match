@@ -181,7 +181,9 @@ export const CharacterController = ({
     }
 
     // Check if fire button is pressed (joystick fire button if available, otherwise keyboard Space)
-    const isFiring = joystick ? joystick.isPressed("fire") : firePressed;
+    const isFiring = joystick
+      ? joystick.isPressed("fire") === true
+      : firePressed;
     if (isFiring) {
       // Use current movement angle, or facing direction if standing still
       const fireAngle = angle !== null ? angle : facingAngle.current;
