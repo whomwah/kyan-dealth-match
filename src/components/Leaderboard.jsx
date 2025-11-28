@@ -41,50 +41,52 @@ export const Leaderboard = () => {
           </span>
         </div>
 
-        {sortedPlayers.map(({ player, lives, isEliminated }, index) => (
-          <div
-            key={player.id}
-            className={`player-card ${isEliminated ? "eliminated" : ""}`}
-          >
-            <div className="player-rank">
-              {isEliminated
-                ? "💀"
-                : hasWinner && index === 0
-                  ? "🏆"
-                  : `#${index + 1}`}
-            </div>
-            <img
-              src={player.state.profile?.photo || ""}
-              className={`player-avatar ${isEliminated ? "grayscale" : ""}`}
-              style={{
-                borderColor: isEliminated
-                  ? "#666"
-                  : player.state.profile?.color,
-              }}
-            />
-            <div className="player-info">
-              <h2 className="player-name">
-                {hasWinner && index === 0 && "👑 "}
-                {player.state.profile?.name}
-                {isEliminated && " (OUT)"}
-              </h2>
-              <div className="player-stats">
-                <p className="lives-display">
-                  {Array.from({ length: MAX_LIVES }, (_, i) => (
-                    <span
-                      key={i}
-                      className={i < lives ? "life-full" : "life-empty"}
-                    >
-                      {i < lives ? "❤️" : "🖤"}
-                    </span>
-                  ))}
-                </p>
-                <p>🎯 {player.state.kills || 0}</p>
+        {sortedPlayers
+          .filter(({ player }) => player.state.profile)
+          .map(({ player, lives, isEliminated }, index) => (
+            <div
+              key={player.id}
+              className={`player-card ${isEliminated ? "eliminated" : ""}`}
+            >
+              <div className="player-rank">
+                {isEliminated
+                  ? "💀"
+                  : hasWinner && index === 0
+                    ? "🏆"
+                    : `#${index + 1}`}
               </div>
+              <img
+                src={player.state.profile.photo || ""}
+                className={`player-avatar ${isEliminated ? "grayscale" : ""}`}
+                style={{
+                  borderColor: isEliminated
+                    ? "#666"
+                    : player.state.profile.color || "#666",
+                }}
+              />
+              <div className="player-info">
+                <h2 className="player-name">
+                  {hasWinner && index === 0 && "👑 "}
+                  {player.state.profile.name || "Player"}
+                  {isEliminated && " (OUT)"}
+                </h2>
+                <div className="player-stats">
+                  <p className="lives-display">
+                    {Array.from({ length: MAX_LIVES }, (_, i) => (
+                      <span
+                        key={i}
+                        className={i < lives ? "life-full" : "life-empty"}
+                      >
+                        {i < lives ? "❤️" : "🖤"}
+                      </span>
+                    ))}
+                  </p>
+                  <p>🎯 {player.state.kills || 0}</p>
+                </div>
+              </div>
+              <div className="candy-cane">🎅</div>
             </div>
-            <div className="candy-cane">🎅</div>
-          </div>
-        ))}
+          ))}
         <div className="christmas-decoration right">🎄</div>
       </div>
       <button
