@@ -33,7 +33,7 @@ export function CharacterSoldier({
 }) {
   const group = useRef();
   const { scene, materials, animations } = useGLTF(
-    "/models/Character_Soldier.gltf"
+    "/models/Character_Soldier.gltf",
   );
   // Skinned meshes cannot be re-used in threejs without cloning them
   const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
@@ -55,7 +55,40 @@ export function CharacterSoldier({
       new MeshStandardMaterial({
         color: new Color(color),
       }),
-    [color]
+    [color],
+  );
+
+  // Christmas-themed materials
+  const santaRedMaterial = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        color: new Color("#C41E3A"), // Santa red
+      }),
+    [],
+  );
+
+  const whiteTrimMaterial = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        color: new Color("#FFFFFF"), // White fur trim
+      }),
+    [],
+  );
+
+  const blackMaterial = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        color: new Color("#1a1a1a"), // Black boots/belt
+      }),
+    [],
+  );
+
+  const greyMaterial = useMemo(
+    () =>
+      new MeshStandardMaterial({
+        color: new Color("#505050"), // Grey for details
+      }),
+    [],
   );
   useEffect(() => {
     // HIDING NON-SELECTED WEAPONS
@@ -74,11 +107,41 @@ export function CharacterSoldier({
         child.receiveShadow = true;
       }
     });
-    nodes.Head.traverse((child) => {
-      if (child.isMesh && child.material.name === "Character_Main") {
-        child.material = playerColorMaterial;
-      }
-    });
+    // Apply materials to Head for Santa look
+    if (nodes.Head) {
+      nodes.Head.traverse((child) => {
+        if (child.isMesh) {
+          if (child.material.name === "Character_Main") {
+            child.material = santaRedMaterial;
+          } else if (child.material.name === "Grey") {
+            // Make the hat/helmet red for Santa
+            child.material = playerColorMaterial;
+          } else if (child.material.name === "Black") {
+            child.material = blackMaterial;
+          }
+        }
+      });
+    }
+
+    // Apply materials to ShoulderPads for Christmas look
+    if (nodes.ShoulderPadL) {
+      nodes.ShoulderPadL.traverse((child) => {
+        if (child.isMesh && child.material.name === "Grey") {
+          child.material = whiteTrimMaterial;
+          child.castShadow = true;
+        }
+      });
+    }
+
+    if (nodes.ShoulderR) {
+      nodes.ShoulderR.traverse((child) => {
+        if (child.isMesh && child.material.name === "Grey") {
+          child.material = whiteTrimMaterial;
+          child.castShadow = true;
+        }
+      });
+    }
+
     clone.traverse((child) => {
       if (child.isMesh && child.material.name === "Character_Main") {
         child.material = playerColorMaterial;
@@ -87,7 +150,14 @@ export function CharacterSoldier({
         child.castShadow = true;
       }
     });
-  }, [nodes, clone]);
+  }, [
+    nodes,
+    clone,
+    playerColorMaterial,
+    santaRedMaterial,
+    whiteTrimMaterial,
+    blackMaterial,
+  ]);
 
   return (
     <group {...props} dispose={null} ref={group}>
@@ -105,28 +175,28 @@ export function CharacterSoldier({
             <skinnedMesh
               name="Cube004_1"
               geometry={nodes.Cube004_1.geometry}
-              material={materials.DarkGrey}
+              material={whiteTrimMaterial}
               skeleton={nodes.Cube004_1.skeleton}
               castShadow
             />
             <skinnedMesh
               name="Cube004_2"
               geometry={nodes.Cube004_2.geometry}
-              material={materials.Pants}
+              material={santaRedMaterial}
               skeleton={nodes.Cube004_2.skeleton}
               castShadow
             />
             <skinnedMesh
               name="Cube004_3"
               geometry={nodes.Cube004_3.geometry}
-              material={playerColorMaterial}
+              material={santaRedMaterial}
               skeleton={nodes.Cube004_3.skeleton}
               castShadow
             />
             <skinnedMesh
               name="Cube004_4"
               geometry={nodes.Cube004_4.geometry}
-              material={materials.Black}
+              material={blackMaterial}
               skeleton={nodes.Cube004_4.skeleton}
               castShadow
             />
