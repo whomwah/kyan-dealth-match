@@ -1,5 +1,5 @@
 import { Environment } from "@react-three/drei";
-import { isHost, myPlayer, useMultiplayerState } from "playroomkit";
+import { isStreamScreen, myPlayer, useMultiplayerState } from "playroomkit";
 import { useEffect, useState } from "react";
 
 import { Bullet } from "./Bullet";
@@ -80,14 +80,14 @@ export const Experience = ({
           downgradedPerformance={downgradedPerformance}
         />
       ))}
-      {(isHost() ? bullets : networkBullets).map((bullet) => (
+      {(isStreamScreen() ? bullets : networkBullets).map((bullet) => (
         <Bullet
           key={bullet.id}
           {...bullet}
           onHit={(position) => onHit(bullet.id, position)}
         />
       ))}
-      {(isHost() ? hits : networkHits).map((hit) => (
+      {(isStreamScreen() ? hits : networkHits).map((hit) => (
         <BulletHit key={hit.id} {...hit} onEnded={() => onHitEnded(hit.id)} />
       ))}
       <Environment preset="sunset" />

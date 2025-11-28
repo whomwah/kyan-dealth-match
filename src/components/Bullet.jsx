@@ -1,5 +1,5 @@
 import { RigidBody, vec3 } from "@react-three/rapier";
-import { isHost } from "playroomkit";
+import { isStreamScreen } from "playroomkit";
 import { useEffect, useRef, useMemo } from "react";
 import { MeshBasicMaterial, LatheGeometry, Vector2 } from "three";
 import { WEAPON_OFFSET } from "./CharacterController";
@@ -68,7 +68,10 @@ export const Bullet = ({ player, angle, position, onHit }) => {
           ref={rigidbody}
           gravityScale={0}
           onIntersectionEnter={(e) => {
-            if (isHost() && e.other.rigidBody.userData?.type !== "bullet") {
+            if (
+              isStreamScreen() &&
+              e.other.rigidBody.userData?.type !== "bullet"
+            ) {
               rigidbody.current.setEnabled(false);
               onHit(vec3(rigidbody.current.translation()));
             }

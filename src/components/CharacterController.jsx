@@ -1,7 +1,7 @@
 import { Billboard, CameraControls, Text } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
-import { isHost } from "playroomkit";
+import { isHost, isStreamScreen } from "playroomkit";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { CharacterSoldier } from "./CharacterSoldier";
 const MOVEMENT_SPEED = 202;
@@ -105,7 +105,7 @@ export const CharacterController = ({
   };
 
   useEffect(() => {
-    if (isHost()) {
+    if (isStreamScreen()) {
       spawnRandomly();
     }
   }, []);
@@ -187,7 +187,7 @@ export const CharacterController = ({
       const fireAngle = angle !== null ? angle : facingAngle.current;
       // fire
       setAnimation(isMoving && angle !== null ? "Run_Shoot" : "Idle_Shoot");
-      if (isHost()) {
+      if (isStreamScreen()) {
         if (Date.now() - lastShoot.current > FIRE_RATE) {
           lastShoot.current = Date.now();
           const newBullet = {
@@ -201,7 +201,7 @@ export const CharacterController = ({
       }
     }
 
-    if (isHost()) {
+    if (isStreamScreen()) {
       state.setState("pos", rigidbody.current.translation());
     } else {
       const pos = state.getState("pos");
@@ -227,10 +227,10 @@ export const CharacterController = ({
         colliders={false}
         linearDamping={12}
         lockRotations
-        type={isHost() ? "dynamic" : "kinematicPosition"}
+        type={isStreamScreen() ? "dynamic" : "kinematicPosition"}
         onIntersectionEnter={({ other }) => {
           if (
-            isHost() &&
+            isStreamScreen() &&
             other.rigidBody.userData.type === "bullet" &&
             state.state.health > 0
           ) {
