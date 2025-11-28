@@ -4,19 +4,19 @@ default:
 
 # Install dependencies
 install:
-    bun install
+    yarn install
 
 # Start development server
 dev:
-    bun --bun vite
+    yarn dev
 
 # Build for production
 build:
-    bun --bun vite build
+    yarn build
 
 # Preview production build
 preview:
-    bun --bun vite preview
+    yarn preview
 
 # Clean build artifacts and dependencies
 clean:
@@ -24,11 +24,11 @@ clean:
 
 # Update dependencies to latest versions
 update:
-    bun update
+    yarn upgrade
 
 # Check for outdated dependencies
 outdated:
-    bun outdated
+    yarn outdated
 
 # Open project in browser (after starting dev server separately)
 open:
