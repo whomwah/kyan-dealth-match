@@ -304,7 +304,13 @@ export const CharacterController = ({
 
 const PlayerInfo = ({ state }) => {
   const health = state.health;
-  const name = state.profile.name;
+  const name = state.profile?.name;
+
+  // Don't render player info until profile is loaded
+  if (!name) {
+    return null;
+  }
+
   return (
     <Billboard position-y={2.5}>
       <Text position-y={0.2} fontSize={0.2} textAlign="center">
