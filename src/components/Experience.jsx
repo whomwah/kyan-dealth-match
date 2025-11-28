@@ -18,6 +18,21 @@ const isTouchDevice = () => {
     window.matchMedia("(pointer: coarse)").matches
   );
 };
+
+export const WEAPONS = [
+  "GrenadeLauncher",
+  "AK",
+  "Pistol",
+  "Revolver",
+  "Revolver_Small",
+  "RocketLauncher",
+  "ShortCannon",
+  "SMG",
+  "Shotgun",
+  "Sniper",
+  "Sniper_2",
+];
+
 import { Bullet } from "./Bullet";
 import { BulletHit } from "./BulletHit";
 import { CharacterController } from "./CharacterController";
@@ -41,6 +56,10 @@ export const Experience = ({ downgradedPerformance = false }) => {
           })
         : null;
       const newPlayer = { state, joystick };
+
+      // Assign random weapon
+      const randomWeapon = WEAPONS[Math.floor(Math.random() * WEAPONS.length)];
+      state.setState("weapon", randomWeapon);
       state.setState("health", 100);
       state.setState("deaths", 0);
       state.setState("kills", 0);

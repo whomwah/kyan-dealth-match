@@ -27,7 +27,7 @@ export const CharacterController = ({
   const character = useRef();
   const rigidbody = useRef();
   const [animation, setAnimation] = useState("Idle");
-  const [weapon, setWeapon] = useState("AK");
+  const weapon = state.state.weapon || "AK";
   const lastShoot = useRef(0);
   const [firePressed, setFirePressed] = useState(false);
   const keysPressed = useRef({ w: false, a: false, s: false, d: false });
@@ -307,50 +307,64 @@ const PlayerInfo = ({ state }) => {
   const name = state.profile.name;
   return (
     <Billboard position-y={2.5}>
-      <Text position-y={0.36} fontSize={0.4}>
-        {name}
-        <meshBasicMaterial color={state.profile.color} />
+      <Text position-y={0.2} fontSize={0.2} textAlign="center">
+        {name.toUpperCase().trim()} 🎄
       </Text>
-      <mesh position-z={-0.1}>
-        <planeGeometry args={[1, 0.2]} />
-        <meshBasicMaterial color="black" transparent opacity={0.5} />
+      <mesh position-z={-0.1} position-y={-0.05}>
+        <planeGeometry args={[0.8, 0.12]} />
+        <meshBasicMaterial color="#0a4d0a" transparent opacity={0.6} />
       </mesh>
-      <mesh scale-x={health / 100} position-x={-0.5 * (1 - health / 100)}>
-        <planeGeometry args={[1, 0.2]} />
-        <meshBasicMaterial color="red" />
+      <mesh
+        scale-x={health / 100}
+        position-x={-0.4 * (1 - health / 100)}
+        position-y={-0.05}
+      >
+        <planeGeometry args={[0.8, 0.12]} />
+        <meshBasicMaterial color="#ff2a2a" />
+      </mesh>
+      <mesh
+        scale-x={health / 100}
+        position-x={-0.4 * (1 - health / 100)}
+        position-y={-0.05}
+        position-z={0.01}
+      >
+        <planeGeometry args={[0.8, 0.12]} />
+        <meshBasicMaterial color="#ffff00" transparent opacity={0.3} />
       </mesh>
     </Billboard>
   );
 };
 
+const crosshairSize = [0.03, 0.03, 0.03];
+
 const Crosshair = (props) => {
   return (
     <group {...props}>
       <mesh position-z={1}>
-        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <boxGeometry args={crosshairSize} />
         <meshBasicMaterial color="black" transparent opacity={0.9} />
       </mesh>
       <mesh position-z={2}>
-        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <boxGeometry args={crosshairSize} />
         <meshBasicMaterial color="black" transparent opacity={0.85} />
       </mesh>
       <mesh position-z={3}>
-        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <boxGeometry args={crosshairSize} />
         <meshBasicMaterial color="black" transparent opacity={0.8} />
       </mesh>
 
       <mesh position-z={4.5}>
-        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <boxGeometry args={crosshairSize} />
         <meshBasicMaterial color="black" opacity={0.7} transparent />
       </mesh>
 
       <mesh position-z={6.5}>
-        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <boxGeometry args={crosshairSize} />
         <meshBasicMaterial color="black" opacity={0.6} transparent />
       </mesh>
 
       <mesh position-z={9}>
-        <boxGeometry args={[0.05, 0.05, 0.05]} />
+        <boxGeometry args={crosshairSize} />
         <meshBasicMaterial color="black" opacity={0.2} transparent />
       </mesh>
     </group>
