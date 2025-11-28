@@ -30,13 +30,12 @@ function App() {
 
       // Set up player join handling
       onPlayerJoin((state) => {
-        // Only create joystick UI on controller screens (phones), not on the stream screen
-        const joystick = !streamScreen
-          ? new Joystick(state, {
-              type: "angular",
-              buttons: [{ id: "fire", label: "Fire" }],
-            })
-          : null;
+        // Create joystick for each player - UI only shows for myPlayer(),
+        // but we need the instance to read synced state from other players
+        const joystick = new Joystick(state, {
+          type: "angular",
+          buttons: [{ id: "fire", label: "Fire" }],
+        });
 
         const newPlayer = { state, joystick };
 
@@ -78,7 +77,12 @@ function App() {
       <Leaderboard />
       <Canvas
         shadows
-        camera={{ position: [0, 30, 0], fov: 30, near: 2 }}
+        camera={{
+          position: [0, 60, 45],
+          fov: 60,
+          near: 2,
+          far: 200,
+        }}
         dpr={[1, 1.5]} // optimisation to increase performance on retina/4k devices
       >
         <color attach="background" args={["#242424"]} />

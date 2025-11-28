@@ -1,7 +1,7 @@
 import { Billboard, CameraControls, Text } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
-import { isHost } from "playroomkit";
+import { isHost, isStreamScreen } from "playroomkit";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { CharacterSoldier } from "./CharacterSoldier";
 const MOVEMENT_SPEED = 202;
@@ -17,12 +17,13 @@ export const CharacterController = ({
   state,
   joystick,
   userPlayer,
-  isMobile,
   onKilled,
   onFire,
   downgradedPerformance,
   ...props
 }) => {
+  // Determine if keyboard controls should be used (local player without joystick input)
+  const useKeyboard = userPlayer && !joystick;
   const group = useRef();
   const character = useRef();
   const rigidbody = useRef();
@@ -33,9 +34,9 @@ export const CharacterController = ({
   const keysPressed = useRef({ w: false, a: false, s: false, d: false });
   const facingAngle = useRef(0); // Track which direction character is facing
 
-  // Keyboard controls for movement (WASD) and firing (Space) - desktop only
+  // Keyboard controls for movement (WASD) and firing (Space) - only for local player without joystick
   useEffect(() => {
-    if (!userPlayer || isMobile) return;
+    if (!useKeyboard) return;
 
     const handleKeyDown = (e) => {
       const key = e.key.toLowerCase();
@@ -67,7 +68,7 @@ export const CharacterController = ({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [userPlayer, isMobile]);
+  }, [useKeyboard]);
 
   // Calculate movement angle from WASD keys (desktop only)
   // Camera looks from +Z toward origin, so:
@@ -75,7 +76,6 @@ export const CharacterController = ({
   // The impulse uses sin(angle) for X and cos(angle) for Z
   // atan2(x, z) gives angle where 0 = +Z direction
   const getKeyboardAngle = () => {
-    if (isMobile) return null;
     const keys = keysPressed.current;
 
     let x = 0;
@@ -105,7 +105,7 @@ export const CharacterController = ({
   };
 
   useEffect(() => {
-    if (isHost()) {
+    if (isStreamScreen()) {
       spawnRandomly();
     }
   }, []);
@@ -148,16 +148,17 @@ export const CharacterController = ({
       return;
     }
 
-    // Update player position based on input method (mobile: joystick, desktop: keyboard)
+    // Update player position based on input method
+    // Priority: joystick (for all players in stream mode), then keyboard (for local desktop player)
     let angle = null;
     let isMoving = false;
 
-    if (isMobile && joystick) {
-      // Mobile: use joystick only
+    if (joystick) {
+      // Use joystick input (works for all players in stream mode)
       angle = joystick.angle();
       isMoving = joystick.isJoystickPressed() && angle;
-    } else if (!isMobile && userPlayer) {
-      // Desktop: use keyboard only
+    } else if (useKeyboard) {
+      // Fallback to keyboard for local player on desktop (non-stream mode)
       angle = getKeyboardAngle();
       isMoving = angle !== null;
     }
@@ -179,14 +180,16 @@ export const CharacterController = ({
       setAnimation("Idle");
     }
 
-    // Check if fire button is pressed (mobile: joystick button, desktop: Space key)
-    const isFiring = isMobile ? joystick?.isPressed("fire") : firePressed;
+    // Check if fire button is pressed (joystick fire button if available, otherwise keyboard Space)
+    const isFiring = joystick
+      ? joystick.isPressed("fire") === true
+      : firePressed;
     if (isFiring) {
       // Use current movement angle, or facing direction if standing still
       const fireAngle = angle !== null ? angle : facingAngle.current;
       // fire
       setAnimation(isMoving && angle !== null ? "Run_Shoot" : "Idle_Shoot");
-      if (isHost()) {
+      if (isStreamScreen()) {
         if (Date.now() - lastShoot.current > FIRE_RATE) {
           lastShoot.current = Date.now();
           const newBullet = {
@@ -200,7 +203,7 @@ export const CharacterController = ({
       }
     }
 
-    if (isHost()) {
+    if (isStreamScreen()) {
       state.setState("pos", rigidbody.current.translation());
     } else {
       const pos = state.getState("pos");
@@ -226,10 +229,10 @@ export const CharacterController = ({
         colliders={false}
         linearDamping={12}
         lockRotations
-        type={isHost() ? "dynamic" : "kinematicPosition"}
+        type={isStreamScreen() ? "dynamic" : "kinematicPosition"}
         onIntersectionEnter={({ other }) => {
           if (
-            isHost() &&
+            isStreamScreen() &&
             other.rigidBody.userData.type === "bullet" &&
             state.state.health > 0
           ) {
@@ -304,7 +307,13 @@ export const CharacterController = ({
 
 const PlayerInfo = ({ state }) => {
   const health = state.health;
-  const name = state.profile.name;
+  const name = state.profile?.name;
+
+  // Don't render player info until profile is loaded
+  if (!name) {
+    return null;
+  }
+
   return (
     <Billboard position-y={2.5}>
       <Text position-y={0.2} fontSize={0.2} textAlign="center">

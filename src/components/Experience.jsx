@@ -1,5 +1,5 @@
-import { Environment } from "@react-three/drei";
-import { isHost, myPlayer, useMultiplayerState } from "playroomkit";
+import { Environment, PerspectiveCamera } from "@react-three/drei";
+import { isStreamScreen, myPlayer, useMultiplayerState } from "playroomkit";
 import { useEffect, useState } from "react";
 
 import { Bullet } from "./Bullet";
@@ -63,29 +63,45 @@ export const Experience = ({
     }
   };
 
+  // Filter out players without valid profiles (prevents ghost players)
+  const validPlayers = players.filter(({ state }) => state.state.profile?.name);
+
+  // Check if this is the stream screen (no local player)
+  const isStream = isStreamScreen();
+
   return (
     <>
+      {/* Fixed overhead camera for stream screen to show entire map */}
+      {isStream && (
+        <PerspectiveCamera
+          makeDefault
+          position={[0, 35, 25]}
+          fov={45}
+          near={1}
+          far={200}
+          rotation={[-Math.PI / 3, 0, 0]}
+        />
+      )}
       <Map />
-      {players.map(({ state, joystick }, index) => (
+      {validPlayers.map(({ state, joystick }, index) => (
         <CharacterController
           key={state.id}
           state={state}
           userPlayer={state.id === myPlayer()?.id}
           joystick={joystick}
-          isMobile={false}
           onKilled={onKilled}
           onFire={onFire}
           downgradedPerformance={downgradedPerformance}
         />
       ))}
-      {(isHost() ? bullets : networkBullets).map((bullet) => (
+      {(isStreamScreen() ? bullets : networkBullets).map((bullet) => (
         <Bullet
           key={bullet.id}
           {...bullet}
           onHit={(position) => onHit(bullet.id, position)}
         />
       ))}
-      {(isHost() ? hits : networkHits).map((hit) => (
+      {(isStreamScreen() ? hits : networkHits).map((hit) => (
         <BulletHit key={hit.id} {...hit} onEnded={() => onHitEnded(hit.id)} />
       ))}
       <Environment preset="sunset" />
