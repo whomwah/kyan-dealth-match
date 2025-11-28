@@ -63,16 +63,18 @@ export const Experience = ({
     }
   };
 
+  // Filter out players without valid profiles (prevents ghost players)
+  const validPlayers = players.filter(({ state }) => state.state.profile?.name);
+
   return (
     <>
       <Map />
-      {players.map(({ state, joystick }, index) => (
+      {validPlayers.map(({ state, joystick }, index) => (
         <CharacterController
           key={state.id}
           state={state}
           userPlayer={state.id === myPlayer()?.id}
           joystick={joystick}
-          isMobile={false}
           onKilled={onKilled}
           onFire={onFire}
           downgradedPerformance={downgradedPerformance}

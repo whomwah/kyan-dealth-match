@@ -30,13 +30,12 @@ function App() {
 
       // Set up player join handling
       onPlayerJoin((state) => {
-        // Only create joystick UI on controller screens (phones), not on the stream screen
-        const joystick = !streamScreen
-          ? new Joystick(state, {
-              type: "angular",
-              buttons: [{ id: "fire", label: "Fire" }],
-            })
-          : null;
+        // Always create Joystick for all players - Playroom handles UI visibility
+        // (only shows UI for myPlayer(), syncs state for all others)
+        const joystick = new Joystick(state, {
+          type: "angular",
+          buttons: [{ id: "fire", label: "Fire" }],
+        });
 
         const newPlayer = { state, joystick };
 

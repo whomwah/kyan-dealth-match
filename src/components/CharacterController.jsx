@@ -17,12 +17,13 @@ export const CharacterController = ({
   state,
   joystick,
   userPlayer,
-  isMobile,
   onKilled,
   onFire,
   downgradedPerformance,
   ...props
 }) => {
+  // Determine if keyboard controls should be used (local player without joystick input)
+  const useKeyboard = userPlayer && !joystick;
   const group = useRef();
   const character = useRef();
   const rigidbody = useRef();
@@ -33,9 +34,9 @@ export const CharacterController = ({
   const keysPressed = useRef({ w: false, a: false, s: false, d: false });
   const facingAngle = useRef(0); // Track which direction character is facing
 
-  // Keyboard controls for movement (WASD) and firing (Space) - desktop only
+  // Keyboard controls for movement (WASD) and firing (Space) - only for local player without joystick
   useEffect(() => {
-    if (!userPlayer || isMobile) return;
+    if (!useKeyboard) return;
 
     const handleKeyDown = (e) => {
       const key = e.key.toLowerCase();
@@ -67,7 +68,7 @@ export const CharacterController = ({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [userPlayer, isMobile]);
+  }, [useKeyboard]);
 
   // Calculate movement angle from WASD keys (desktop only)
   // Camera looks from +Z toward origin, so:
@@ -75,7 +76,6 @@ export const CharacterController = ({
   // The impulse uses sin(angle) for X and cos(angle) for Z
   // atan2(x, z) gives angle where 0 = +Z direction
   const getKeyboardAngle = () => {
-    if (isMobile) return null;
     const keys = keysPressed.current;
 
     let x = 0;
@@ -148,16 +148,17 @@ export const CharacterController = ({
       return;
     }
 
-    // Update player position based on input method (mobile: joystick, desktop: keyboard)
+    // Update player position based on input method
+    // Priority: joystick (for all players in stream mode), then keyboard (for local desktop player)
     let angle = null;
     let isMoving = false;
 
-    if (isMobile && joystick) {
-      // Mobile: use joystick only
+    if (joystick) {
+      // Use joystick input (works for all players in stream mode)
       angle = joystick.angle();
       isMoving = joystick.isJoystickPressed() && angle;
-    } else if (!isMobile && userPlayer) {
-      // Desktop: use keyboard only
+    } else if (useKeyboard) {
+      // Fallback to keyboard for local player on desktop (non-stream mode)
       angle = getKeyboardAngle();
       isMoving = angle !== null;
     }
