@@ -20,9 +20,34 @@ export const Leaderboard = () => {
 
   const activePlayers = playersWithLives.filter((p) => !p.isEliminated).length;
   const hasWinner = activePlayers === 1 && players.length > 1;
+  const winner = hasWinner ? sortedPlayers[0] : null;
 
   return (
     <>
+      {/* Winner Overlay */}
+      {hasWinner && winner && (
+        <div className="winner-overlay">
+          <div className="winner-content">
+            <h1 className="winner-title">WINNER</h1>
+            <img
+              src={winner.player.state.profile?.photo || ""}
+              className="winner-avatar"
+              alt="Winner"
+            />
+            <div
+              className="winner-name"
+              style={{ color: winner.player.state.profile?.color || "#fff" }}
+            >
+              {winner.player.state.profile?.name || "Player"}
+            </div>
+            <div className="winner-stats">
+              <span>🎯 {winner.player.state.kills || 0} kills</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Leaderboard chips */}
       <div className="leaderboard-compact">
         {sortedPlayers.map(({ player, lives, isEliminated }, index) => (
           <div
