@@ -148,64 +148,114 @@ export const CharacterController = ({
       return;
     }
 
-    // Update player position based on input method (mobile: joystick, desktop: keyboard)
+    // Determine input based on whether this is the local player
     let angle = null;
     let isMoving = false;
+    let isFiring = false;
 
-    if (isMobile && joystick) {
-      // Mobile: use joystick only
-      angle = joystick.angle();
-      isMoving = joystick.isJoystickPressed() && angle;
-    } else if (!isMobile && userPlayer) {
-      // Desktop: use keyboard only
-      angle = getKeyboardAngle();
-      isMoving = angle !== null;
-    }
+    if (userPlayer) {
+      // Local player: capture input from joystick (mobile) or keyboard (desktop)
+      if (isMobile && joystick) {
+        const joystickAngle = joystick.angle();
+        // Note: angle can be 0 (valid direction), so check isJoystickPressed separately
+        const joystickPressed = joystick.isJoystickPressed();
+        angle = joystickPressed ? joystickAngle : null;
+        isMoving = joystickPressed && joystickAngle !== undefined;
+        isFiring = joystick?.isPressed("fire");
+      } else if (!isMobile) {
+        angle = getKeyboardAngle();
+        isMoving = angle !== null;
+        isFiring = firePressed;
+      }
 
-    if (isMoving && angle !== null) {
-      setAnimation("Run");
-      character.current.rotation.y = angle;
-      facingAngle.current = angle; // Remember facing direction
-
-      // move character in its own direction
-      const impulse = {
-        x: Math.sin(angle) * MOVEMENT_SPEED * delta,
-        y: 0,
-        z: Math.cos(angle) * MOVEMENT_SPEED * delta,
-      };
-
-      rigidbody.current.applyImpulse(impulse, true);
+      // Non-host players sync their input to state for the host to read
+      if (!isHost()) {
+        state.setState("input", {
+          angle: angle,
+          isMoving: isMoving,
+          isFiring: isFiring,
+        });
+      }
     } else {
-      setAnimation("Idle");
-    }
-
-    // Check if fire button is pressed (mobile: joystick button, desktop: Space key)
-    const isFiring = isMobile ? joystick?.isPressed("fire") : firePressed;
-    if (isFiring) {
-      // Use current movement angle, or facing direction if standing still
-      const fireAngle = angle !== null ? angle : facingAngle.current;
-      // fire
-      setAnimation(isMoving && angle !== null ? "Run_Shoot" : "Idle_Shoot");
+      // Not the local player - only host needs to read input from state
       if (isHost()) {
-        if (Date.now() - lastShoot.current > FIRE_RATE) {
-          lastShoot.current = Date.now();
-          const newBullet = {
-            id: state.id + "-" + +new Date(),
-            position: vec3(rigidbody.current.translation()),
-            angle: fireAngle,
-            player: state.id,
-          };
-          onFire(newBullet);
+        const input = state.getState("input");
+        if (input) {
+          angle = input.angle;
+          isMoving = input.isMoving;
+          isFiring = input.isFiring;
         }
       }
     }
 
+    // Host calculates animation/rotation for all players
+    // Non-host only calculates for their own player, reads synced values for others
+    const shouldCalculateLocally = isHost() || userPlayer;
+
+    let newAnimation = "Idle";
+
+    if (shouldCalculateLocally) {
+      if (isMoving && angle !== null) {
+        newAnimation = "Run";
+        character.current.rotation.y = angle;
+        facingAngle.current = angle; // Remember facing direction
+
+        // Only host applies physics impulse
+        if (isHost()) {
+          const impulse = {
+            x: Math.sin(angle) * MOVEMENT_SPEED * delta,
+            y: 0,
+            z: Math.cos(angle) * MOVEMENT_SPEED * delta,
+          };
+          rigidbody.current.applyImpulse(impulse, true);
+        }
+      }
+
+      // Handle firing
+      if (isFiring) {
+        // Use current movement angle, or facing direction if standing still
+        const fireAngle = angle !== null ? angle : facingAngle.current;
+        // fire
+        newAnimation = isMoving && angle !== null ? "Run_Shoot" : "Idle_Shoot";
+        if (isHost()) {
+          if (Date.now() - lastShoot.current > FIRE_RATE) {
+            lastShoot.current = Date.now();
+            const newBullet = {
+              id: state.id + "-" + +new Date(),
+              position: vec3(rigidbody.current.translation()),
+              angle: fireAngle,
+              player: state.id,
+            };
+            onFire(newBullet);
+          }
+        }
+      }
+
+      setAnimation(newAnimation);
+    }
+
+    // Host syncs position, animation, and rotation to state
     if (isHost()) {
       state.setState("pos", rigidbody.current.translation());
+      state.setState("animation", newAnimation);
+      state.setState("rotation", character.current.rotation.y);
     } else {
+      // Non-host reads position from state for all players
       const pos = state.getState("pos");
       if (pos) {
         rigidbody.current.setTranslation(pos);
+      }
+
+      // Non-host reads animation and rotation from state for remote players only
+      if (!userPlayer) {
+        const syncedAnimation = state.getState("animation");
+        if (syncedAnimation) {
+          setAnimation(syncedAnimation);
+        }
+        const syncedRotation = state.getState("rotation");
+        if (syncedRotation !== undefined && character.current) {
+          character.current.rotation.y = syncedRotation;
+        }
       }
     }
   });
