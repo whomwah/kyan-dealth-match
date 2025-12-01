@@ -10,6 +10,10 @@ install:
 dev:
     yarn dev
 
+# Start development server with host option
+dev-host:
+    yarn dev --host
+
 # Build for production
 build:
     yarn build

@@ -148,39 +148,66 @@ export const CharacterController = ({
       return;
     }
 
-    // Update player position based on input method (mobile: joystick, desktop: keyboard)
+    // Determine input based on whether this is the local player
     let angle = null;
     let isMoving = false;
+    let isFiring = false;
 
-    if (isMobile && joystick) {
-      // Mobile: use joystick only
-      angle = joystick.angle();
-      isMoving = joystick.isJoystickPressed() && angle;
-    } else if (!isMobile && userPlayer) {
-      // Desktop: use keyboard only
-      angle = getKeyboardAngle();
-      isMoving = angle !== null;
+    if (userPlayer) {
+      // Local player: capture input from joystick (mobile) or keyboard (desktop)
+      if (isMobile && joystick) {
+        const joystickAngle = joystick.angle();
+        // Note: angle can be 0 (valid direction), so check isJoystickPressed separately
+        const joystickPressed = joystick.isJoystickPressed();
+        angle = joystickPressed ? joystickAngle : null;
+        isMoving = joystickPressed && joystickAngle !== undefined;
+        isFiring = joystick?.isPressed("fire");
+      } else if (!isMobile) {
+        angle = getKeyboardAngle();
+        isMoving = angle !== null;
+        isFiring = firePressed;
+      }
+
+      // Non-host players sync their input to state for the host to read
+      if (!isHost()) {
+        state.setState("input", {
+          angle: angle,
+          isMoving: isMoving,
+          isFiring: isFiring,
+        });
+      }
+    } else {
+      // Not the local player - only host needs to read input from state
+      if (isHost()) {
+        const input = state.getState("input");
+        if (input) {
+          angle = input.angle;
+          isMoving = input.isMoving;
+          isFiring = input.isFiring;
+        }
+      }
     }
 
+    // Host applies physics for all players; non-host just updates animation
     if (isMoving && angle !== null) {
       setAnimation("Run");
       character.current.rotation.y = angle;
       facingAngle.current = angle; // Remember facing direction
 
-      // move character in its own direction
-      const impulse = {
-        x: Math.sin(angle) * MOVEMENT_SPEED * delta,
-        y: 0,
-        z: Math.cos(angle) * MOVEMENT_SPEED * delta,
-      };
-
-      rigidbody.current.applyImpulse(impulse, true);
+      // Only host applies physics impulse
+      if (isHost()) {
+        const impulse = {
+          x: Math.sin(angle) * MOVEMENT_SPEED * delta,
+          y: 0,
+          z: Math.cos(angle) * MOVEMENT_SPEED * delta,
+        };
+        rigidbody.current.applyImpulse(impulse, true);
+      }
     } else {
       setAnimation("Idle");
     }
 
-    // Check if fire button is pressed (mobile: joystick button, desktop: Space key)
-    const isFiring = isMobile ? joystick?.isPressed("fire") : firePressed;
+    // Handle firing
     if (isFiring) {
       // Use current movement angle, or facing direction if standing still
       const fireAngle = angle !== null ? angle : facingAngle.current;
@@ -200,6 +227,7 @@ export const CharacterController = ({
       }
     }
 
+    // Host syncs position to state; non-host reads position from state
     if (isHost()) {
       state.setState("pos", rigidbody.current.translation());
     } else {
