@@ -1,11 +1,23 @@
 import { Environment } from "@react-three/drei";
-import { isHost, myPlayer, useMultiplayerState } from "playroomkit";
-import { useEffect, useState } from "react";
+import {
+  Joystick,
+  insertCoin,
+  isHost,
+  myPlayer,
+  onPlayerJoin,
+  useMultiplayerState,
+} from "playroomkit";
+import { useEffect, useState, useMemo } from "react";
 
-import { Bullet } from "./Bullet";
-import { BulletHit } from "./BulletHit";
-import { CharacterController } from "./CharacterController";
-import { Map } from "./Map";
+// Detect if device is mobile/touch
+const isTouchDevice = () => {
+  if (typeof window === "undefined") return false;
+  return (
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0 ||
+    window.matchMedia("(pointer: coarse)").matches
+  );
+};
 
 export const WEAPONS = [
   "GrenadeLauncher",
@@ -21,11 +33,47 @@ export const WEAPONS = [
   "Sniper_2",
 ];
 
-export const Experience = ({
-  downgradedPerformance = false,
-  players,
-  setPlayers,
-}) => {
+import { Bullet } from "./Bullet";
+import { BulletHit } from "./BulletHit";
+import { CharacterController } from "./CharacterController";
+import { Map } from "./Map";
+
+export const Experience = ({ downgradedPerformance = false }) => {
+  const [players, setPlayers] = useState([]);
+  const isMobile = useMemo(() => isTouchDevice(), []);
+
+  const start = async () => {
+    // Start the game
+    await insertCoin({ maxPlayersPerRoom: 10 });
+
+    // Create a joystick controller for each joining player (mobile only)
+    onPlayerJoin((state) => {
+      // Only create joystick UI on mobile/touch devices
+      const joystick = isTouchDevice()
+        ? new Joystick(state, {
+            type: "angular",
+            buttons: [{ id: "fire", label: "Fire" }],
+          })
+        : null;
+      const newPlayer = { state, joystick };
+
+      // Assign random weapon
+      const randomWeapon = WEAPONS[Math.floor(Math.random() * WEAPONS.length)];
+      state.setState("weapon", randomWeapon);
+      state.setState("health", 100);
+      state.setState("deaths", 0);
+      state.setState("kills", 0);
+      setPlayers((players) => [...players, newPlayer]);
+      state.onQuit(() => {
+        setPlayers((players) => players.filter((p) => p.state.id !== state.id));
+      });
+    });
+  };
+
+  useEffect(() => {
+    start();
+  }, []);
+
   const [bullets, setBullets] = useState([]);
   const [hits, setHits] = useState([]);
 
@@ -57,10 +105,8 @@ export const Experience = ({
   }, [hits]);
 
   const onKilled = (_victim, killer) => {
-    const killerState = players.find((p) => p.state.id === killer)?.state;
-    if (killerState) {
-      killerState.setState("kills", killerState.state.kills + 1);
-    }
+    const killerState = players.find((p) => p.state.id === killer).state;
+    killerState.setState("kills", killerState.state.kills + 1);
   };
 
   return (
@@ -72,7 +118,7 @@ export const Experience = ({
           state={state}
           userPlayer={state.id === myPlayer()?.id}
           joystick={joystick}
-          isMobile={false}
+          isMobile={isMobile}
           onKilled={onKilled}
           onFire={onFire}
           downgradedPerformance={downgradedPerformance}

@@ -188,52 +188,74 @@ export const CharacterController = ({
       }
     }
 
-    // Host applies physics for all players; non-host just updates animation
-    if (isMoving && angle !== null) {
-      setAnimation("Run");
-      character.current.rotation.y = angle;
-      facingAngle.current = angle; // Remember facing direction
+    // Host calculates animation/rotation for all players
+    // Non-host only calculates for their own player, reads synced values for others
+    const shouldCalculateLocally = isHost() || userPlayer;
 
-      // Only host applies physics impulse
-      if (isHost()) {
-        const impulse = {
-          x: Math.sin(angle) * MOVEMENT_SPEED * delta,
-          y: 0,
-          z: Math.cos(angle) * MOVEMENT_SPEED * delta,
-        };
-        rigidbody.current.applyImpulse(impulse, true);
-      }
-    } else {
-      setAnimation("Idle");
-    }
+    let newAnimation = "Idle";
 
-    // Handle firing
-    if (isFiring) {
-      // Use current movement angle, or facing direction if standing still
-      const fireAngle = angle !== null ? angle : facingAngle.current;
-      // fire
-      setAnimation(isMoving && angle !== null ? "Run_Shoot" : "Idle_Shoot");
-      if (isHost()) {
-        if (Date.now() - lastShoot.current > FIRE_RATE) {
-          lastShoot.current = Date.now();
-          const newBullet = {
-            id: state.id + "-" + +new Date(),
-            position: vec3(rigidbody.current.translation()),
-            angle: fireAngle,
-            player: state.id,
+    if (shouldCalculateLocally) {
+      if (isMoving && angle !== null) {
+        newAnimation = "Run";
+        character.current.rotation.y = angle;
+        facingAngle.current = angle; // Remember facing direction
+
+        // Only host applies physics impulse
+        if (isHost()) {
+          const impulse = {
+            x: Math.sin(angle) * MOVEMENT_SPEED * delta,
+            y: 0,
+            z: Math.cos(angle) * MOVEMENT_SPEED * delta,
           };
-          onFire(newBullet);
+          rigidbody.current.applyImpulse(impulse, true);
         }
       }
+
+      // Handle firing
+      if (isFiring) {
+        // Use current movement angle, or facing direction if standing still
+        const fireAngle = angle !== null ? angle : facingAngle.current;
+        // fire
+        newAnimation = isMoving && angle !== null ? "Run_Shoot" : "Idle_Shoot";
+        if (isHost()) {
+          if (Date.now() - lastShoot.current > FIRE_RATE) {
+            lastShoot.current = Date.now();
+            const newBullet = {
+              id: state.id + "-" + +new Date(),
+              position: vec3(rigidbody.current.translation()),
+              angle: fireAngle,
+              player: state.id,
+            };
+            onFire(newBullet);
+          }
+        }
+      }
+
+      setAnimation(newAnimation);
     }
 
-    // Host syncs position to state; non-host reads position from state
+    // Host syncs position, animation, and rotation to state
     if (isHost()) {
       state.setState("pos", rigidbody.current.translation());
+      state.setState("animation", newAnimation);
+      state.setState("rotation", character.current.rotation.y);
     } else {
+      // Non-host reads position from state for all players
       const pos = state.getState("pos");
       if (pos) {
         rigidbody.current.setTranslation(pos);
+      }
+
+      // Non-host reads animation and rotation from state for remote players only
+      if (!userPlayer) {
+        const syncedAnimation = state.getState("animation");
+        if (syncedAnimation) {
+          setAnimation(syncedAnimation);
+        }
+        const syncedRotation = state.getState("rotation");
+        if (syncedRotation !== undefined && character.current) {
+          character.current.rotation.y = syncedRotation;
+        }
       }
     }
   });
