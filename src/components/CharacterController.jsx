@@ -23,6 +23,7 @@ export const CharacterController = ({
   getNextSpawn,
   onGameReset,
   downgradedPerformance,
+  gameReady = true,
   ...props
 }) => {
   const group = useRef();
@@ -170,6 +171,12 @@ export const CharacterController = ({
 
     if (state.state.dead) {
       setAnimation("Death");
+      return;
+    }
+
+    // Freeze players during countdown
+    if (!gameReady) {
+      setAnimation("Idle");
       return;
     }
 

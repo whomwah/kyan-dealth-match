@@ -1,0 +1,582 @@
+/* Game Countdown Overlay */
+.countdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 25, 10, 0.97) 0%,
+    rgba(40, 10, 10, 0.97) 50%,
+    rgba(10, 25, 10, 0.97) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: overlayFadeIn 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Snowfall effect */
+.countdown-snow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(3px 3px at 20px 30px, white, transparent),
+    radial-gradient(
+      4px 4px at 40px 70px,
+      rgba(255, 255, 255, 0.9),
+      transparent
+    ),
+    radial-gradient(
+      3px 3px at 50px 160px,
+      rgba(255, 255, 255, 0.8),
+      transparent
+    ),
+    radial-gradient(4px 4px at 90px 40px, white, transparent),
+    radial-gradient(
+      3px 3px at 130px 80px,
+      rgba(255, 255, 255, 0.9),
+      transparent
+    ),
+    radial-gradient(5px 5px at 160px 120px, white, transparent),
+    radial-gradient(
+      3px 3px at 200px 50px,
+      rgba(255, 255, 255, 0.8),
+      transparent
+    ),
+    radial-gradient(4px 4px at 250px 90px, white, transparent),
+    radial-gradient(
+      3px 3px at 300px 150px,
+      rgba(255, 255, 255, 0.9),
+      transparent
+    ),
+    radial-gradient(5px 5px at 350px 30px, white, transparent),
+    radial-gradient(
+      3px 3px at 400px 100px,
+      rgba(255, 255, 255, 0.8),
+      transparent
+    ),
+    radial-gradient(4px 4px at 450px 60px, white, transparent),
+    radial-gradient(
+      3px 3px at 500px 140px,
+      rgba(255, 255, 255, 0.9),
+      transparent
+    ),
+    radial-gradient(5px 5px at 80px 200px, white, transparent),
+    radial-gradient(
+      3px 3px at 180px 250px,
+      rgba(255, 255, 255, 0.8),
+      transparent
+    ),
+    radial-gradient(4px 4px at 280px 220px, white, transparent),
+    radial-gradient(
+      3px 3px at 380px 280px,
+      rgba(255, 255, 255, 0.9),
+      transparent
+    ),
+    radial-gradient(5px 5px at 480px 240px, white, transparent);
+  background-size: 550px 350px;
+  animation: countdownSnowfall 6s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes countdownSnowfall {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+/* Decorative corners */
+.countdown-corner {
+  position: absolute;
+  font-size: 4rem;
+  z-index: 2;
+  animation: cornerSway 2s ease-in-out infinite;
+}
+
+.countdown-corner-tl {
+  top: 2rem;
+  left: 2rem;
+}
+
+.countdown-corner-tr {
+  top: 2rem;
+  right: 2rem;
+  animation-delay: -0.5s;
+}
+
+.countdown-corner-bl {
+  bottom: 2rem;
+  left: 2rem;
+  animation-delay: -1s;
+}
+
+.countdown-corner-br {
+  bottom: 2rem;
+  right: 2rem;
+  animation-delay: -1.5s;
+}
+
+@keyframes cornerSway {
+  0%,
+  100% {
+    transform: rotate(-10deg) scale(1);
+  }
+  50% {
+    transform: rotate(10deg) scale(1.1);
+  }
+}
+
+/* Garland at the top */
+.countdown-garland {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  letter-spacing: 0.3rem;
+  animation: garlandTwinkle 1s ease-in-out infinite alternate;
+  z-index: 2;
+}
+
+@keyframes garlandTwinkle {
+  0% {
+    opacity: 0.7;
+    filter: brightness(1);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1.3);
+  }
+}
+
+/* Game title */
+.countdown-title {
+  position: absolute;
+  top: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  background: linear-gradient(180deg, #ffd700 0%, #ff6b6b 50%, #90ee90 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6))
+    drop-shadow(2px 2px 0 rgba(139, 0, 0, 0.5));
+  animation: titleGlow 2s ease-in-out infinite alternate;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+@keyframes titleGlow {
+  0% {
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6))
+      drop-shadow(2px 2px 0 rgba(139, 0, 0, 0.5));
+  }
+  100% {
+    filter: drop-shadow(0 0 20px rgba(220, 20, 60, 0.8))
+      drop-shadow(2px 2px 0 rgba(0, 100, 0, 0.5));
+  }
+}
+
+/* Main countdown content */
+.countdown-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  z-index: 10;
+  position: relative;
+}
+
+/* Emoji above the number */
+.countdown-emoji {
+  font-size: 5rem;
+  animation:
+    emojiPop 0.5s ease-out,
+    emojiBounce 1s ease-in-out infinite;
+}
+
+@keyframes emojiPop {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.3) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes emojiBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* The countdown number */
+.countdown-number {
+  font-size: 15rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffd700;
+  text-shadow:
+    0 0 30px rgba(255, 215, 0, 0.8),
+    0 0 60px rgba(255, 215, 0, 0.6),
+    0 0 90px rgba(255, 215, 0, 0.4),
+    8px 8px 0 #b8860b,
+    -2px -2px 0 #fff8dc;
+  animation:
+    numberPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    numberPulse 0.5s ease-in-out infinite alternate;
+  font-family: "Arial Black", "Helvetica Neue", sans-serif;
+}
+
+@keyframes numberPop {
+  0% {
+    transform: scale(3) rotate(-15deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(0.9) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes numberPulse {
+  0% {
+    text-shadow:
+      0 0 30px rgba(255, 215, 0, 0.8),
+      0 0 60px rgba(220, 20, 60, 0.6),
+      0 0 90px rgba(0, 128, 0, 0.4),
+      8px 8px 0 #b8860b;
+  }
+  100% {
+    text-shadow:
+      0 0 50px rgba(220, 20, 60, 1),
+      0 0 100px rgba(0, 200, 0, 0.8),
+      0 0 150px rgba(255, 215, 0, 0.6),
+      8px 8px 0 #8b0000;
+  }
+}
+
+/* GO! text special styling */
+.countdown-number.go-text {
+  font-size: 18rem;
+  background: linear-gradient(
+    180deg,
+    #ffd700 0%,
+    #ff6b6b 25%,
+    #90ee90 50%,
+    #ff6b6b 75%,
+    #ffd700 100%
+  );
+  background-size: 100% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation:
+    numberPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    goGradient 0.5s ease-in-out infinite,
+    goShake 0.1s ease-in-out infinite;
+  filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.8))
+    drop-shadow(4px 4px 0 rgba(184, 134, 11, 0.8));
+}
+
+@keyframes goGradient {
+  0%,
+  100% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 0% 100%;
+  }
+}
+
+@keyframes goShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px) rotate(-2deg);
+  }
+  75% {
+    transform: translateX(5px) rotate(2deg);
+  }
+}
+
+/* GO state - extra effects */
+.countdown-content.countdown-go .countdown-emoji {
+  animation: goEmoji 0.3s ease-out forwards;
+}
+
+@keyframes goEmoji {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(2) rotate(360deg);
+  }
+  100% {
+    transform: scale(1.5);
+  }
+}
+
+/* Subtext */
+.countdown-subtext {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #90ee90;
+  text-transform: uppercase;
+  letter-spacing: 0.5em;
+  text-shadow:
+    0 0 10px rgba(144, 238, 144, 0.8),
+    2px 2px 0 #006400;
+  animation: subtextFade 0.5s ease-out;
+}
+
+@keyframes subtextFade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.countdown-go .countdown-subtext {
+  color: #ff6b6b;
+  font-size: 2.5rem;
+  text-shadow:
+    0 0 20px rgba(255, 107, 107, 1),
+    2px 2px 0 #8b0000;
+  animation: fightPulse 0.2s ease-in-out infinite alternate;
+}
+
+@keyframes fightPulse {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.1);
+  }
+}
+
+/* Christmas lights */
+.countdown-lights {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.countdown-lights .light {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  box-shadow:
+    0 0 10px currentColor,
+    0 0 20px currentColor,
+    0 0 30px currentColor;
+  animation: lightBlink 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes lightBlink {
+  0% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Bottom decoration - Santa's sleigh */
+.countdown-bottom-deco {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3rem;
+  animation: sleighFly 4s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes sleighFly {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  25% {
+    transform: translateX(-40%) translateY(-15px);
+  }
+  50% {
+    transform: translateX(-50%) translateY(0);
+  }
+  75% {
+    transform: translateX(-60%) translateY(-15px);
+  }
+}
+
+/* Burst effect for GO */
+.countdown-go::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 215, 0, 0.3) 0%,
+    rgba(220, 20, 60, 0.2) 30%,
+    transparent 70%
+  );
+  animation: burstExpand 0.5s ease-out;
+  z-index: -1;
+}
+
+@keyframes burstExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.5;
+  }
+}
+
+/* Sparkle particles around GO */
+.countdown-go::after {
+  content: "✨🌟💫⭐✨🌟💫⭐";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 2rem;
+  transform: translate(-50%, -50%);
+  animation: sparkleSpread 0.8s ease-out forwards;
+  white-space: nowrap;
+  z-index: -1;
+}
+
+@keyframes sparkleSpread {
+  0% {
+    letter-spacing: 0;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  100% {
+    letter-spacing: 3rem;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .countdown-number {
+    font-size: 10rem;
+  }
+
+  .countdown-number.go-text {
+    font-size: 12rem;
+  }
+
+  .countdown-emoji {
+    font-size: 3.5rem;
+  }
+
+  .countdown-subtext {
+    font-size: 1.5rem;
+    letter-spacing: 0.3em;
+  }
+
+  .countdown-corner {
+    font-size: 2.5rem;
+  }
+
+  .countdown-garland {
+    font-size: 1.5rem;
+  }
+
+  .countdown-bottom-deco {
+    font-size: 2rem;
+  }
+
+  .countdown-title {
+    font-size: 2rem;
+    letter-spacing: 0.15em;
+  }
+}
+
+@media (max-width: 480px) {
+  .countdown-number {
+    font-size: 7rem;
+  }
+
+  .countdown-number.go-text {
+    font-size: 8rem;
+  }
+
+  .countdown-emoji {
+    font-size: 2.5rem;
+  }
+
+  .countdown-subtext {
+    font-size: 1.2rem;
+    letter-spacing: 0.2em;
+  }
+
+  .countdown-lights {
+    gap: 1rem;
+  }
+
+  .countdown-lights .light {
+    width: 0.7rem;
+    height: 0.7rem;
+  }
+
+  .countdown-title {
+    font-size: 1.4rem;
+    letter-spacing: 0.1em;
+    top: 4rem;
+  }
+}

@@ -53,17 +53,23 @@ const shuffleArray = (array) => {
   return shuffled;
 };
 
-export const Experience = ({ downgradedPerformance = false }) => {
+export const Experience = ({
+  downgradedPerformance = false,
+  onLaunch,
+  gameReady = true,
+}) => {
   const [players, setPlayers] = useState([]);
-  const [ready, setReady] = useState(false);
+  const [lobbyComplete, setLobbyComplete] = useState(false);
   const isMobile = useMemo(() => isTouchDevice(), []);
   const spawnQueueRef = useRef([]);
   const spawnPointsRef = useRef(null);
   const scene = useThree((state) => state.scene);
 
-  // Cache spawn points from the scene (only done once)
+  // Cache spawn points from the scene (only caches if spawns are found)
   const getSpawnPoints = useCallback(() => {
-    if (spawnPointsRef.current) return spawnPointsRef.current;
+    if (spawnPointsRef.current && spawnPointsRef.current.length > 0) {
+      return spawnPointsRef.current;
+    }
 
     const spawns = [];
     for (let i = 0; i <= 15; i++) {
@@ -72,13 +78,21 @@ export const Experience = ({ downgradedPerformance = false }) => {
         spawns.push(spawn.position.clone());
       }
     }
-    spawnPointsRef.current = spawns;
+
+    // Only cache if we found spawns (scene might not be ready yet)
+    if (spawns.length > 0) {
+      spawnPointsRef.current = spawns;
+    }
     return spawns;
   }, [scene]);
 
   // Generate the spawn queue - called once when game starts
   const generateSpawnQueue = useCallback(() => {
     const spawnPoints = getSpawnPoints();
+    console.log(
+      "[Spawn] generateSpawnQueue called, found spawn points:",
+      spawnPoints.length,
+    );
     if (spawnPoints.length === 0) return;
 
     // Create array with each spawn point used once per round before repeating
@@ -92,6 +106,11 @@ export const Experience = ({ downgradedPerformance = false }) => {
 
     // Take only what we need (no final shuffle - preserves the round-robin guarantee)
     spawnQueueRef.current = repeatedSpawns.slice(0, TOTAL_SPAWNS_NEEDED);
+    console.log(
+      "[Spawn] Queue generated with",
+      spawnQueueRef.current.length,
+      "positions",
+    );
   }, [getSpawnPoints]);
 
   // Track if spawn queue needs regeneration (set by first player detecting reset)
@@ -99,12 +118,37 @@ export const Experience = ({ downgradedPerformance = false }) => {
 
   // Get next spawn position from the queue
   const getNextSpawn = useCallback(() => {
+    console.log(
+      "[Spawn] getNextSpawn called, queue length:",
+      spawnQueueRef.current.length,
+    );
+
     // Regenerate if flagged or exhausted
     if (spawnQueueNeedsRegen.current || spawnQueueRef.current.length === 0) {
+      console.log("[Spawn] Regenerating spawn queue...");
       generateSpawnQueue();
       spawnQueueNeedsRegen.current = false;
     }
-    return spawnQueueRef.current.pop() || getSpawnPoints()[0];
+
+    // If queue has spawns, use it
+    if (spawnQueueRef.current.length > 0) {
+      const pos = spawnQueueRef.current.pop();
+      console.log("[Spawn] Using queued position:", pos.x, pos.y, pos.z);
+      return pos;
+    }
+
+    // Fallback: try to get spawn points directly (scene might be ready now)
+    const spawns = getSpawnPoints();
+    if (spawns.length > 0) {
+      // Pick a random spawn point as fallback
+      const pos = spawns[Math.floor(Math.random() * spawns.length)];
+      console.log("[Spawn] Fallback random position:", pos.x, pos.y, pos.z);
+      return pos;
+    }
+
+    // Last resort: return a default position
+    console.warn("[Spawn] No spawn points found, using default position");
+    return { x: 0, y: 1, z: 0 };
   }, [generateSpawnQueue, getSpawnPoints]);
 
   // Flag spawn queue for regeneration on game reset (called by first player detecting reset)
@@ -115,11 +159,21 @@ export const Experience = ({ downgradedPerformance = false }) => {
   }, []);
 
   const start = async () => {
-    // Start the game
-    await insertCoin({
-      maxPlayersPerRoom: 16,
-      reconnectGracePeriod: 5000,
-    });
+    // Start the game - insertCoin shows lobby and resolves when host clicks Launch
+    await insertCoin(
+      {
+        maxPlayersPerRoom: 16,
+        reconnectGracePeriod: 5000,
+      },
+      // onLaunchCallback - fired when host clicks Launch
+      () => {
+        // Notify parent to show countdown
+        onLaunch?.();
+      },
+    );
+
+    // Lobby is complete - players have joined and host clicked Launch
+    setLobbyComplete(true);
 
     // Create a joystick controller for each joining player (mobile only)
     onPlayerJoin((state) => {
@@ -143,8 +197,6 @@ export const Experience = ({ downgradedPerformance = false }) => {
         setPlayers((players) => players.filter((p) => p.state.id !== state.id));
       });
     });
-
-    setReady(true);
 
     // Generate spawn queue after scene is ready (host only manages this)
     if (isHost()) {
@@ -194,7 +246,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
     killerState.setState("kills", killerState.state.kills + 1);
   };
 
-  if (!ready) {
+  if (!lobbyComplete) {
     return null;
   }
 
@@ -213,6 +265,7 @@ export const Experience = ({ downgradedPerformance = false }) => {
           getNextSpawn={getNextSpawn}
           onGameReset={onGameReset}
           downgradedPerformance={downgradedPerformance}
+          gameReady={gameReady}
         />
       ))}
       {(isHost() ? bullets : networkBullets).map((bullet) => (
