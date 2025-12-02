@@ -14,10 +14,10 @@ body {
   top: 0.5rem;
   left: 0.5rem;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 0.4rem;
   z-index: 10;
-  max-width: 50%;
 }
 
 .player-chip {
@@ -53,9 +53,19 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.chip-name {
+  font-size: 0.7rem;
+  font-weight: 500;
+  max-width: 6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .chip-lives {
-  font-size: 0.6rem;
-  letter-spacing: -1px;
+  font-size: 0.5rem;
+  letter-spacing: 0;
+  color: #ff6b6b;
 }
 
 .chip-kills {

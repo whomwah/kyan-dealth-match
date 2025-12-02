@@ -45,7 +45,11 @@ export const Experience = ({ downgradedPerformance = false }) => {
 
   const start = async () => {
     // Start the game
-    await insertCoin({ maxPlayersPerRoom: 10 });
+    await insertCoin({
+      maxPlayersPerRoom: 10,
+      roomCode: "OCK",
+      reconnectGracePeriod: 5000,
+    });
 
     // Create a joystick controller for each joining player (mobile only)
     onPlayerJoin((state) => {

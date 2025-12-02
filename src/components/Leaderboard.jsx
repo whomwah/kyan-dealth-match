@@ -64,9 +64,15 @@ export const Leaderboard = () => {
               src={player.state.profile?.photo || ""}
               className="chip-avatar"
             />
+            <span
+              className="chip-name"
+              style={{ color: player.state.profile?.color || "#fff" }}
+            >
+              {player.state.profile?.name || "Player"}
+            </span>
             <span className="chip-lives">
-              {"❤️".repeat(lives)}
-              {"🖤".repeat(MAX_LIVES - lives)}
+              {"♥".repeat(lives)}
+              {"♡".repeat(MAX_LIVES - lives)}
             </span>
             <span className="chip-kills">🎯{player.state.kills || 0}</span>
           </div>
