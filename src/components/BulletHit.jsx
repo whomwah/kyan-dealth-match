@@ -21,8 +21,8 @@ const AnimatedSnowflake = ({ scale, target, speed, drift, color }) => {
     if (ref.current.scale.x > 0) {
       time.current += delta;
 
-      // Gentle shrinking
-      const newScale = initialScale.current * (1 - time.current * speed * 0.8);
+      // Faster shrinking
+      const newScale = initialScale.current * (1 - time.current * speed * 2.5);
       if (newScale > 0) {
         ref.current.scale.x =
           ref.current.scale.y =
@@ -71,7 +71,7 @@ export const BulletHit = ({ nb = 120, position, onEnded }) => {
       if (isHost()) {
         onEnded();
       }
-    }, 800); // Slightly longer duration for snow to drift
+    }, 400); // Shorter duration for quicker cleanup
   }, [onEnded]);
 
   return (
