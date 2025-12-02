@@ -36,6 +36,7 @@ export const CharacterController = ({
   const [firePressed, setFirePressed] = useState(false);
   const keysPressed = useRef({ w: false, a: false, s: false, d: false });
   const facingAngle = useRef(0); // Track which direction character is facing
+  const impulseRef = useRef({ x: 0, y: 0, z: 0 }); // Reused for physics impulse
 
   // Keyboard controls for movement (WASD) and firing (Space) - desktop only
   useEffect(() => {
@@ -235,12 +236,10 @@ export const CharacterController = ({
 
         // Only host applies physics impulse
         if (isHost()) {
-          const impulse = {
-            x: Math.sin(angle) * MOVEMENT_SPEED * delta,
-            y: 0,
-            z: Math.cos(angle) * MOVEMENT_SPEED * delta,
-          };
-          rigidbody.current.applyImpulse(impulse, true);
+          impulseRef.current.x = Math.sin(angle) * MOVEMENT_SPEED * delta;
+          impulseRef.current.y = 0;
+          impulseRef.current.z = Math.cos(angle) * MOVEMENT_SPEED * delta;
+          rigidbody.current.applyImpulse(impulseRef.current, true);
         }
       }
 
