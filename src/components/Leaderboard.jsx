@@ -1,6 +1,25 @@
 import { usePlayersList, isHost } from "playroomkit";
 import { MAX_LIVES } from "./CharacterController";
 
+// Snowflake component for festive effect
+const Snowflake = ({ style }) => (
+  <div className="snowflake" style={style}>
+    ❄
+  </div>
+);
+
+// Generate random snowflakes
+const generateSnowflakes = (count) => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    animationDuration: `${3 + Math.random() * 4}s`,
+    animationDelay: `${Math.random() * 3}s`,
+    fontSize: `${0.8 + Math.random() * 1.2}rem`,
+    opacity: 0.6 + Math.random() * 0.4,
+  }));
+};
+
 export const Leaderboard = () => {
   const players = usePlayersList(true);
 
@@ -35,65 +54,104 @@ export const Leaderboard = () => {
 
   return (
     <>
-      {/* Winner Overlay */}
+      {/* Christmas Winner Overlay */}
       {hasWinner && winner && (
-        <div className="winner-overlay">
-          <div className="winner-content">
-            <h1 className="winner-title">WINNER</h1>
-            <img
-              src={winner.player.state.profile?.photo || ""}
-              className="winner-avatar"
-              alt="Winner"
-            />
+        <div className="winner-overlay christmas-overlay">
+          {/* Snowflakes */}
+          <div className="snowflakes-container">
+            {generateSnowflakes(30).map((flake) => (
+              <Snowflake
+                key={flake.id}
+                style={{
+                  left: flake.left,
+                  animationDuration: flake.animationDuration,
+                  animationDelay: flake.animationDelay,
+                  fontSize: flake.fontSize,
+                  opacity: flake.opacity,
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Christmas decorations */}
+          <div className="christmas-decorations">
+            <span className="decoration decoration-left">🎄</span>
+            <span className="decoration decoration-right">🎄</span>
+          </div>
+
+          <div className="winner-content christmas-content">
+            {/* Top garland */}
+            <div className="christmas-garland">🎅 ⭐ 🦌 ⭐ 🎅</div>
+
+            <h1 className="winner-title christmas-title">WINNER</h1>
+
+            {/* Wreath around avatar */}
+            <div className="winner-avatar-wrapper">
+              <img
+                src={winner.player.state.profile?.photo || ""}
+                className="winner-avatar christmas-avatar"
+                alt="Winner"
+              />
+            </div>
+
             <div
-              className="winner-name"
+              className="winner-name christmas-name"
               style={{ color: winner.player.state.profile?.color || "#fff" }}
             >
               {winner.player.state.profile?.name || "Player"}
             </div>
-            <div className="winner-stats">
-              <span>🎯 {winner.player.state.kills || 0} kills</span>
+
+            <div className="christmas-message">
+              ✨ Merry Christmas, Champion! ✨
             </div>
+
             {hostPlayer && (
-              <button className="reset-game-button" onClick={resetGame}>
-                🔄 New Game
+              <button
+                className="reset-game-button christmas-button"
+                onClick={resetGame}
+              >
+                🎅 New Game 🎄
               </button>
             )}
           </div>
         </div>
       )}
 
-      {/* Leaderboard chips */}
-      <div className="leaderboard-compact">
-        {sortedPlayers.map(({ player, lives, isEliminated }, index) => (
-          <div
-            key={player.id}
-            className={`player-chip ${isEliminated ? "eliminated" : ""} ${hasWinner && index === 0 ? "winner" : ""}`}
-            style={{
-              borderColor: isEliminated ? "#666" : player.state.profile?.color,
-            }}
-          >
-            <span className="chip-rank">
-              {isEliminated ? "💀" : hasWinner && index === 0 ? "🏆" : ""}
-            </span>
-            <img
-              src={player.state.profile?.photo || ""}
-              className="chip-avatar"
-            />
-            <span
-              className="chip-name"
-              style={{ color: player.state.profile?.color || "#fff" }}
+      {/* Leaderboard chips - hidden when winner is shown */}
+      {!hasWinner && (
+        <div className="leaderboard-compact">
+          {sortedPlayers.map(({ player, lives, isEliminated }, index) => (
+            <div
+              key={player.id}
+              className={`player-chip ${isEliminated ? "eliminated" : ""} ${hasWinner && index === 0 ? "winner" : ""}`}
+              style={{
+                borderColor: isEliminated
+                  ? "#666"
+                  : player.state.profile?.color,
+              }}
             >
-              {player.state.profile?.name || "Player"}
-            </span>
-            <span className="chip-lives">
-              {"♥".repeat(lives)}
-              {"♡".repeat(MAX_LIVES - lives)}
-            </span>
-            <span className="chip-kills">🎯{player.state.kills || 0}</span>
-          </div>
-        ))}
-      </div>
+              <span className="chip-rank">
+                {isEliminated ? "💀" : hasWinner && index === 0 ? "🏆" : ""}
+              </span>
+              <img
+                src={player.state.profile?.photo || ""}
+                className="chip-avatar"
+              />
+              <span
+                className="chip-name"
+                style={{ color: player.state.profile?.color || "#fff" }}
+              >
+                {player.state.profile?.name || "Player"}
+              </span>
+              <span className="chip-lives">
+                {"♥".repeat(lives)}
+                {"♡".repeat(MAX_LIVES - lives)}
+              </span>
+              <span className="chip-kills">🎯{player.state.kills || 0}</span>
+            </div>
+          ))}
+        </div>
+      )}
       <button
         className="fullscreen-button"
         onClick={() => {
