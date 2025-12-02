@@ -1,5 +1,6 @@
 import { Billboard, CameraControls, Text } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
+import { BoxGeometry, MeshBasicMaterial } from "three";
 import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
 import { isHost } from "playroomkit";
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -417,38 +418,73 @@ const PlayerInfo = ({ state }) => {
   );
 };
 
-const crosshairSize = [0.03, 0.03, 0.03];
+const crosshairGeometry = new BoxGeometry(0.03, 0.03, 0.03);
+const crosshairMaterials = {
+  near1: new MeshBasicMaterial({
+    color: "black",
+    transparent: true,
+    opacity: 0.9,
+  }),
+  near2: new MeshBasicMaterial({
+    color: "black",
+    transparent: true,
+    opacity: 0.85,
+  }),
+  near3: new MeshBasicMaterial({
+    color: "black",
+    transparent: true,
+    opacity: 0.8,
+  }),
+  mid: new MeshBasicMaterial({
+    color: "black",
+    transparent: true,
+    opacity: 0.7,
+  }),
+  far: new MeshBasicMaterial({
+    color: "black",
+    transparent: true,
+    opacity: 0.6,
+  }),
+  farthest: new MeshBasicMaterial({
+    color: "black",
+    transparent: true,
+    opacity: 0.2,
+  }),
+};
 
 const Crosshair = (props) => {
   return (
     <group {...props}>
-      <mesh position-z={1}>
-        <boxGeometry args={crosshairSize} />
-        <meshBasicMaterial color="black" transparent opacity={0.9} />
-      </mesh>
-      <mesh position-z={2}>
-        <boxGeometry args={crosshairSize} />
-        <meshBasicMaterial color="black" transparent opacity={0.85} />
-      </mesh>
-      <mesh position-z={3}>
-        <boxGeometry args={crosshairSize} />
-        <meshBasicMaterial color="black" transparent opacity={0.8} />
-      </mesh>
-
-      <mesh position-z={4.5}>
-        <boxGeometry args={crosshairSize} />
-        <meshBasicMaterial color="black" opacity={0.7} transparent />
-      </mesh>
-
-      <mesh position-z={6.5}>
-        <boxGeometry args={crosshairSize} />
-        <meshBasicMaterial color="black" opacity={0.6} transparent />
-      </mesh>
-
-      <mesh position-z={9}>
-        <boxGeometry args={crosshairSize} />
-        <meshBasicMaterial color="black" opacity={0.2} transparent />
-      </mesh>
+      <mesh
+        position-z={1}
+        geometry={crosshairGeometry}
+        material={crosshairMaterials.near1}
+      />
+      <mesh
+        position-z={2}
+        geometry={crosshairGeometry}
+        material={crosshairMaterials.near2}
+      />
+      <mesh
+        position-z={3}
+        geometry={crosshairGeometry}
+        material={crosshairMaterials.near3}
+      />
+      <mesh
+        position-z={4.5}
+        geometry={crosshairGeometry}
+        material={crosshairMaterials.mid}
+      />
+      <mesh
+        position-z={6.5}
+        geometry={crosshairGeometry}
+        material={crosshairMaterials.far}
+      />
+      <mesh
+        position-z={9}
+        geometry={crosshairGeometry}
+        material={crosshairMaterials.farthest}
+      />
     </group>
   );
 };
