@@ -20,6 +20,8 @@ export const CharacterController = ({
   isMobile,
   onKilled,
   onFire,
+  getNextSpawn,
+  onGameReset,
   downgradedPerformance,
   ...props
 }) => {
@@ -89,26 +91,23 @@ export const CharacterController = ({
     return Math.atan2(x, z);
   };
 
-  const scene = useThree((state) => state.scene);
-  const spawnRandomly = () => {
-    const spawns = [];
-    for (let i = 0; i < 1000; i++) {
-      const spawn = scene.getObjectByName(`spawn_${i}`);
-      if (spawn) {
-        spawns.push(spawn);
-      } else {
-        break;
-      }
+  const spawnAtNextPosition = useCallback(() => {
+    if (!getNextSpawn || !rigidbody.current) return;
+    const spawnPos = getNextSpawn();
+    if (spawnPos) {
+      rigidbody.current.setTranslation(spawnPos);
     }
-    const spawnPos = spawns[Math.floor(Math.random() * spawns.length)].position;
-    rigidbody.current.setTranslation(spawnPos);
-  };
+  }, [getNextSpawn]);
 
   useEffect(() => {
     if (isHost()) {
-      spawnRandomly();
+      // Small delay to ensure spawn queue is generated
+      const timer = setTimeout(() => {
+        spawnAtNextPosition();
+      }, 150);
+      return () => clearTimeout(timer);
     }
-  }, []);
+  }, [spawnAtNextPosition]);
 
   // Handle game reset - when eliminated becomes false, respawn the player
   useEffect(() => {
@@ -120,11 +119,21 @@ export const CharacterController = ({
     ) {
       // This indicates a game reset - re-enable and respawn
       if (rigidbody.current && !rigidbody.current.isEnabled()) {
+        // Regenerate spawn queue for the new game
+        if (onGameReset) {
+          onGameReset();
+        }
         rigidbody.current.setEnabled(true);
-        spawnRandomly();
+        spawnAtNextPosition();
       }
     }
-  }, [state.state.eliminated, state.state.dead, state.state.health]);
+  }, [
+    state.state.eliminated,
+    state.state.dead,
+    state.state.health,
+    onGameReset,
+    spawnAtNextPosition,
+  ]);
 
   useEffect(() => {
     if (state.state.dead) {
@@ -314,7 +323,7 @@ export const CharacterController = ({
               if (livesRemaining > 0) {
                 // Respawn after delay
                 setTimeout(() => {
-                  spawnRandomly();
+                  spawnAtNextPosition();
                   rigidbody.current.setEnabled(true);
                   state.setState("health", 100);
                   state.setState("dead", false);

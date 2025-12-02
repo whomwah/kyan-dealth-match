@@ -7,7 +7,8 @@ import {
   onPlayerJoin,
   useMultiplayerState,
 } from "playroomkit";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useThree } from "@react-three/fiber";
 
 // Detect if device is mobile/touch
 const isTouchDevice = () => {
@@ -38,15 +39,85 @@ import { BulletHit } from "./BulletHit";
 import { CharacterController } from "./CharacterController";
 import { Map } from "./Map";
 
+const MAX_PLAYERS = 16;
+const SPAWNS_PER_PLAYER = 3; // 1 initial spawn + 2 respawns (players have 3 lives)
+const TOTAL_SPAWNS_NEEDED = MAX_PLAYERS * SPAWNS_PER_PLAYER; // 48
+
+// Shuffle array using Fisher-Yates algorithm
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 export const Experience = ({ downgradedPerformance = false }) => {
   const [players, setPlayers] = useState([]);
   const [ready, setReady] = useState(false);
   const isMobile = useMemo(() => isTouchDevice(), []);
+  const spawnQueueRef = useRef([]);
+  const spawnPointsRef = useRef(null);
+  const scene = useThree((state) => state.scene);
+
+  // Cache spawn points from the scene (only done once)
+  const getSpawnPoints = useCallback(() => {
+    if (spawnPointsRef.current) return spawnPointsRef.current;
+
+    const spawns = [];
+    for (let i = 0; i <= 15; i++) {
+      const spawn = scene.getObjectByName(`spawn_${i}`);
+      if (spawn) {
+        spawns.push(spawn.position.clone());
+      }
+    }
+    spawnPointsRef.current = spawns;
+    return spawns;
+  }, [scene]);
+
+  // Generate the spawn queue - called once when game starts
+  const generateSpawnQueue = useCallback(() => {
+    const spawnPoints = getSpawnPoints();
+    if (spawnPoints.length === 0) return;
+
+    // Create array with each spawn point used once per round before repeating
+    // Each batch is shuffled independently, ensuring all 16 points are used before any repeats
+    const repeatedSpawns = [];
+    const repeatsNeeded = Math.ceil(TOTAL_SPAWNS_NEEDED / spawnPoints.length);
+
+    for (let i = 0; i < repeatsNeeded; i++) {
+      repeatedSpawns.push(...shuffleArray(spawnPoints));
+    }
+
+    // Take only what we need (no final shuffle - preserves the round-robin guarantee)
+    spawnQueueRef.current = repeatedSpawns.slice(0, TOTAL_SPAWNS_NEEDED);
+  }, [getSpawnPoints]);
+
+  // Track if spawn queue needs regeneration (set by first player detecting reset)
+  const spawnQueueNeedsRegen = useRef(false);
+
+  // Get next spawn position from the queue
+  const getNextSpawn = useCallback(() => {
+    // Regenerate if flagged or exhausted
+    if (spawnQueueNeedsRegen.current || spawnQueueRef.current.length === 0) {
+      generateSpawnQueue();
+      spawnQueueNeedsRegen.current = false;
+    }
+    return spawnQueueRef.current.pop() || getSpawnPoints()[0];
+  }, [generateSpawnQueue, getSpawnPoints]);
+
+  // Flag spawn queue for regeneration on game reset (called by first player detecting reset)
+  const onGameReset = useCallback(() => {
+    if (isHost()) {
+      spawnQueueNeedsRegen.current = true;
+    }
+  }, []);
 
   const start = async () => {
     // Start the game
     await insertCoin({
-      maxPlayersPerRoom: 10,
+      maxPlayersPerRoom: 16,
       reconnectGracePeriod: 5000,
     });
 
@@ -74,6 +145,14 @@ export const Experience = ({ downgradedPerformance = false }) => {
     });
 
     setReady(true);
+
+    // Generate spawn queue after scene is ready (host only manages this)
+    if (isHost()) {
+      // Small delay to ensure scene objects are loaded
+      setTimeout(() => {
+        generateSpawnQueue();
+      }, 100);
+    }
   };
 
   useEffect(() => {
@@ -131,6 +210,8 @@ export const Experience = ({ downgradedPerformance = false }) => {
           isMobile={isMobile}
           onKilled={onKilled}
           onFire={onFire}
+          getNextSpawn={getNextSpawn}
+          onGameReset={onGameReset}
           downgradedPerformance={downgradedPerformance}
         />
       ))}
