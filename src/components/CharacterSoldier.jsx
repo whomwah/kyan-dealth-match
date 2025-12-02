@@ -68,13 +68,6 @@ export function CharacterSoldier({
     [],
   );
 
-  const greyMaterial = useMemo(
-    () =>
-      new MeshStandardMaterial({
-        color: new Color("#505050"), // Grey for details
-      }),
-    [],
-  );
   useEffect(() => {
     // HIDING NON-SELECTED WEAPONS
     WEAPONS.forEach((wp) => {
