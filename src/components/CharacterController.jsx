@@ -31,6 +31,9 @@ export const CharacterController = ({
   const character = useRef();
   const rigidbody = useRef();
   const [animation, setAnimation] = useState("Idle");
+  const [isMobileView, setIsMobileView] = useState(
+    () => window.innerWidth < 1024,
+  );
   const weapon = state.state.weapon || "AK";
   const lastShoot = useRef(0);
   const [firePressed, setFirePressed] = useState(false);
@@ -73,6 +76,13 @@ export const CharacterController = ({
       window.removeEventListener("keyup", handleKeyUp);
     };
   }, [userPlayer, isMobile]);
+
+  // Cache window width check for camera distance calculations
+  useEffect(() => {
+    const handleResize = () => setIsMobileView(window.innerWidth < 1024);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Calculate movement angle from WASD keys (desktop only)
   // Camera looks from +Z toward origin, so:
@@ -157,8 +167,8 @@ export const CharacterController = ({
   useFrame((_, delta) => {
     // CAMERA FOLLOW
     if (controls.current) {
-      const cameraDistanceY = window.innerWidth < 1024 ? 16 : 20;
-      const cameraDistanceZ = window.innerWidth < 1024 ? 12 : 16;
+      const cameraDistanceY = isMobileView ? 16 : 20;
+      const cameraDistanceZ = isMobileView ? 12 : 16;
       const playerWorldPos = vec3(rigidbody.current.translation());
       controls.current.setLookAt(
         playerWorldPos.x,
