@@ -40,6 +40,7 @@ import { Map } from "./Map";
 
 export const Experience = ({ downgradedPerformance = false }) => {
   const [players, setPlayers] = useState([]);
+  const [ready, setReady] = useState(false);
   const isMobile = useMemo(() => isTouchDevice(), []);
 
   const start = async () => {
@@ -68,6 +69,8 @@ export const Experience = ({ downgradedPerformance = false }) => {
         setPlayers((players) => players.filter((p) => p.state.id !== state.id));
       });
     });
+
+    setReady(true);
   };
 
   useEffect(() => {
@@ -108,6 +111,10 @@ export const Experience = ({ downgradedPerformance = false }) => {
     const killerState = players.find((p) => p.state.id === killer).state;
     killerState.setState("kills", killerState.state.kills + 1);
   };
+
+  if (!ready) {
+    return null;
+  }
 
   return (
     <>
