@@ -91,7 +91,7 @@ export const CharacterController = ({
   // W (forward) = -Z, S (backward) = +Z, A (left) = -X, D (right) = +X
   // The impulse uses sin(angle) for X and cos(angle) for Z
   // atan2(x, z) gives angle where 0 = +Z direction
-  const getKeyboardAngle = () => {
+  const getKeyboardAngle = useCallback(() => {
     if (isMobile) return null;
     const keys = keysPressed.current;
 
@@ -104,7 +104,7 @@ export const CharacterController = ({
 
     if (x === 0 && z === 0) return null;
     return Math.atan2(x, z);
-  };
+  }, [isMobile]);
 
   const spawnAtNextPosition = useCallback(() => {
     if (!getNextSpawn || !rigidbody.current) return;
