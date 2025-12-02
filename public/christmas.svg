@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 256 256">
+  <!-- Star on top -->
+  <polygon fill="#FFD700" points="128,8 136,28 158,28 140,42 148,64 128,50 108,64 116,42 98,28 120,28"/>
+
+  <!-- Christmas tree layers -->
+  <polygon fill="#228B22" points="128,45 178,95 158,95 198,145 168,145 218,205 38,205 88,145 58,145 98,95 78,95"/>
+
+  <!-- Tree decorations (baubles) -->
+  <circle cx="110" cy="120" r="8" fill="#FF0000"/>
+  <circle cx="150" cy="140" r="8" fill="#FFD700"/>
+  <circle cx="95" cy="165" r="8" fill="#1E90FF"/>
+  <circle cx="160" cy="175" r="8" fill="#FF0000"/>
+  <circle cx="128" cy="155" r="8" fill="#FF69B4"/>
+  <circle cx="75" cy="190" r="6" fill="#FFD700"/>
+  <circle cx="180" cy="190" r="6" fill="#1E90FF"/>
+
+  <!-- Tree trunk -->
+  <rect x="113" y="205" width="30" height="35" fill="#8B4513"/>
+
+  <!-- Snow base -->
+  <ellipse cx="128" cy="245" rx="50" ry="10" fill="#FFFFFF"/>
+</svg>
