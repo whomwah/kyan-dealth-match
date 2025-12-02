@@ -47,7 +47,6 @@ export const Experience = ({ downgradedPerformance = false }) => {
     // Start the game
     await insertCoin({
       maxPlayersPerRoom: 10,
-      roomCode: "OCK",
       reconnectGracePeriod: 5000,
     });
 

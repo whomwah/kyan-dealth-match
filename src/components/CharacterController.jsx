@@ -110,6 +110,22 @@ export const CharacterController = ({
     }
   }, []);
 
+  // Handle game reset - when eliminated becomes false, respawn the player
+  useEffect(() => {
+    if (
+      isHost() &&
+      state.state.eliminated === false &&
+      state.state.dead === false &&
+      state.state.health === 100
+    ) {
+      // This indicates a game reset - re-enable and respawn
+      if (rigidbody.current && !rigidbody.current.isEnabled()) {
+        rigidbody.current.setEnabled(true);
+        spawnRandomly();
+      }
+    }
+  }, [state.state.eliminated, state.state.dead, state.state.health]);
+
   useEffect(() => {
     if (state.state.dead) {
       const audio = new Audio("/audios/dead.mp3");

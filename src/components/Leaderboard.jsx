@@ -1,4 +1,4 @@
-import { usePlayersList } from "playroomkit";
+import { usePlayersList, isHost } from "playroomkit";
 import { MAX_LIVES } from "./CharacterController";
 
 export const Leaderboard = () => {
@@ -21,6 +21,17 @@ export const Leaderboard = () => {
   const activePlayers = playersWithLives.filter((p) => !p.isEliminated).length;
   const hasWinner = activePlayers === 1 && players.length > 1;
   const winner = hasWinner ? sortedPlayers[0] : null;
+  const hostPlayer = isHost();
+
+  const resetGame = () => {
+    players.forEach((player) => {
+      player.setState("deaths", 0);
+      player.setState("kills", 0);
+      player.setState("eliminated", false);
+      player.setState("health", 100);
+      player.setState("dead", false);
+    });
+  };
 
   return (
     <>
@@ -43,6 +54,11 @@ export const Leaderboard = () => {
             <div className="winner-stats">
               <span>🎯 {winner.player.state.kills || 0} kills</span>
             </div>
+            {hostPlayer && (
+              <button className="reset-game-button" onClick={resetGame}>
+                🔄 New Game
+              </button>
+            )}
           </div>
         </div>
       )}

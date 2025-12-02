@@ -193,3 +193,31 @@ body {
   padding: 0.5rem 1.5rem;
   border-radius: 2rem;
 }
+
+/* Reset Game Button */
+.reset-game-button {
+  margin-top: 1rem;
+  padding: 1rem 2rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  border: none;
+  border-radius: 2rem;
+  cursor: pointer;
+  box-shadow:
+    0 4px 15px rgba(46, 204, 113, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.reset-game-button:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 6px 20px rgba(46, 204, 113, 0.6),
+    0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.reset-game-button:active {
+  transform: scale(0.98);
+}
