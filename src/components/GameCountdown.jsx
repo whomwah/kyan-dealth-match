@@ -2,11 +2,42 @@ import { useState, useEffect, useCallback } from "react";
 import "./GameCountdown.css";
 
 const COUNTDOWN_ITEMS = [
-  { text: "3", emoji: "🎄", subtext: "Get Ready!" },
-  { text: "2", emoji: "🎅", subtext: "Steady..." },
-  { text: "1", emoji: "🦌", subtext: "Almost..." },
-  { text: "GO!", emoji: "⭐", subtext: "FIGHT!" },
+  { text: "5", emoji: "🎄" },
+  { text: "4", emoji: "🎅" },
+  { text: "3", emoji: "🦌" },
+  { text: "2", emoji: "⛄" },
+  { text: "1", emoji: "🎁" },
+  { text: "GO!", emoji: "⭐" },
 ];
+
+const ControlsLeft = () => (
+  <div className="countdown-controls countdown-controls-left">
+    <div className="controls-section">
+      <div className="controls-title">Movement</div>
+      <div className="wasd-keys">
+        <div className="key-row">
+          <div className="key">W</div>
+        </div>
+        <div className="key-row">
+          <div className="key">A</div>
+          <div className="key">S</div>
+          <div className="key">D</div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const ControlsRight = () => (
+  <div className="countdown-controls countdown-controls-right">
+    <div className="controls-section">
+      <div className="controls-title">Fire</div>
+      <div className="space-key">
+        <div className="key key-space">SPACE</div>
+      </div>
+    </div>
+  </div>
+);
 
 export const GameCountdown = ({ isActive, onComplete }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -66,6 +97,10 @@ export const GameCountdown = ({ isActive, onComplete }) => {
       {/* Game title */}
       <div className="countdown-title">Kyan Christmas Death Match</div>
 
+      {/* Keyboard controls - positioned on sides */}
+      <ControlsLeft />
+      <ControlsRight />
+
       {/* Main countdown content */}
       <div className={`countdown-content ${isGo ? "countdown-go" : ""}`}>
         <div className="countdown-emoji">{currentItem.emoji}</div>
@@ -73,8 +108,6 @@ export const GameCountdown = ({ isActive, onComplete }) => {
         <div className={`countdown-number ${isGo ? "go-text" : ""}`}>
           {currentItem.text}
         </div>
-
-        <div className="countdown-subtext">{currentItem.subtext}</div>
 
         {/* Christmas lights */}
         <div className="countdown-lights">

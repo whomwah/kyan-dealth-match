@@ -513,70 +513,253 @@
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .countdown-number {
-    font-size: 10rem;
+    font-size: 8rem;
   }
 
   .countdown-number.go-text {
-    font-size: 12rem;
+    font-size: 10rem;
   }
 
   .countdown-emoji {
-    font-size: 3.5rem;
+    font-size: 3rem;
   }
 
   .countdown-subtext {
-    font-size: 1.5rem;
-    letter-spacing: 0.3em;
+    font-size: 1.3rem;
+    letter-spacing: 0.2em;
   }
 
   .countdown-corner {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .countdown-garland {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
   }
 
   .countdown-bottom-deco {
-    font-size: 2rem;
+    font-size: 1.8rem;
+    bottom: 1.5rem;
   }
 
   .countdown-title {
-    font-size: 2rem;
-    letter-spacing: 0.15em;
+    font-size: 1.6rem;
+    letter-spacing: 0.1em;
+    top: 4rem;
+  }
+
+  .countdown-controls {
+    padding: 0.75rem 1rem;
+  }
+
+  .countdown-controls-left {
+    left: 1.5rem;
+  }
+
+  .countdown-controls-right {
+    right: 1.5rem;
+  }
+
+  .controls-title {
+    font-size: 0.9rem;
+  }
+
+  .key {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.8rem;
+  }
+
+  .key-space {
+    width: 5rem;
+    height: 2rem;
+    font-size: 0.75rem;
+  }
+
+  .countdown-lights {
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .countdown-lights .light {
+    width: 0.6rem;
+    height: 0.6rem;
   }
 }
 
 @media (max-width: 480px) {
   .countdown-number {
-    font-size: 7rem;
+    font-size: 6rem;
   }
 
   .countdown-number.go-text {
-    font-size: 8rem;
+    font-size: 7rem;
   }
 
   .countdown-emoji {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .countdown-subtext {
-    font-size: 1.2rem;
-    letter-spacing: 0.2em;
+    font-size: 1rem;
+    letter-spacing: 0.15em;
   }
 
   .countdown-lights {
-    gap: 1rem;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
   }
 
   .countdown-lights .light {
-    width: 0.7rem;
-    height: 0.7rem;
+    width: 0.5rem;
+    height: 0.5rem;
   }
 
   .countdown-title {
-    font-size: 1.4rem;
-    letter-spacing: 0.1em;
-    top: 4rem;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    top: 3.5rem;
   }
+
+  .countdown-corner {
+    font-size: 1.5rem;
+  }
+
+  .countdown-corner-tl,
+  .countdown-corner-tr {
+    top: 1rem;
+  }
+
+  .countdown-corner-bl,
+  .countdown-corner-br {
+    bottom: 1rem;
+  }
+
+  .countdown-controls {
+    display: none;
+  }
+
+  .countdown-bottom-deco {
+    font-size: 1.5rem;
+    bottom: 1rem;
+  }
+
+  .countdown-garland {
+    font-size: 1rem;
+  }
+}
+
+/* Keyboard Controls Display */
+.countdown-controls {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  animation: controlsFadeIn 0.5s ease-out;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.countdown-controls-left {
+  left: 3rem;
+}
+
+.countdown-controls-right {
+  right: 3rem;
+}
+
+@keyframes controlsFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.controls-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.controls-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #ffd700;
+  text-shadow:
+    0 0 10px rgba(255, 215, 0, 0.6),
+    2px 2px 0 #8b6914;
+}
+
+.wasd-keys {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.key-row {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.key {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
+  border: 2px solid #666;
+  border-radius: 0.4rem;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: "Arial Black", "Helvetica Neue", sans-serif;
+  box-shadow:
+    0 3px 0 #1a1a1a,
+    0 5px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  animation: keyGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes keyGlow {
+  0% {
+    box-shadow:
+      0 4px 0 #1a1a1a,
+      0 6px 10px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 0 10px rgba(144, 238, 144, 0.3);
+  }
+  100% {
+    box-shadow:
+      0 4px 0 #1a1a1a,
+      0 6px 10px rgba(0, 0, 0, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 0 20px rgba(144, 238, 144, 0.6);
+  }
+}
+
+.key-space {
+  width: 6rem;
+  height: 2.5rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+}
+
+.space-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
