@@ -1,6 +1,6 @@
 import { RigidBody, vec3 } from "@react-three/rapier";
 import { isHost } from "playroomkit";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef } from "react";
 import { MeshBasicMaterial, LatheGeometry, Vector2 } from "three";
 import { WEAPON_OFFSET } from "./CharacterController";
 
@@ -10,6 +10,9 @@ const bulletMaterial = new MeshBasicMaterial({
   color: "#1a1a1a",
   toneMapped: false,
 });
+
+// Pre-load audio for cloning (avoids creating new Audio objects each time)
+const rifleAudio = new Audio("/audios/rifle.mp3");
 
 // Create plug shape using lathe geometry
 const createPlugGeometry = () => {
@@ -37,7 +40,8 @@ const createPlugGeometry = () => {
   // Rounded tip
   points.push(new Vector2(0, 0.36));
 
-  return new LatheGeometry(points, 16);
+  // Reduced segments from 16 to 10 for fast-moving bullet
+  return new LatheGeometry(points, 10);
 };
 
 const plugGeometry = createPlugGeometry();
@@ -46,7 +50,8 @@ export const Bullet = ({ player, angle, position, onHit }) => {
   const rigidbody = useRef();
 
   useEffect(() => {
-    const audio = new Audio("/audios/rifle.mp3");
+    // Clone pre-loaded audio instead of creating new Audio object
+    const audio = rifleAudio.cloneNode();
     audio.play();
     const velocity = {
       x: Math.sin(angle) * BULLET_SPEED,
@@ -55,7 +60,7 @@ export const Bullet = ({ player, angle, position, onHit }) => {
     };
 
     rigidbody.current.setLinvel(velocity, true);
-  }, []);
+  }, [angle]);
 
   return (
     <group position={[position.x, position.y, position.z]} rotation-y={angle}>
