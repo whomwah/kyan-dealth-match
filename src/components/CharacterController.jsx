@@ -28,6 +28,8 @@ export const CharacterController = ({
   ...props
 }) => {
   const group = useRef();
+  const deadAudioRef = useRef(null);
+  const hurtAudioRef = useRef(null);
   const character = useRef();
   const rigidbody = useRef();
   const [animation, setAnimation] = useState("Idle");
@@ -148,19 +150,25 @@ export const CharacterController = ({
     spawnAtNextPosition,
   ]);
 
+  // Pre-load audio objects once per component instance
   useEffect(() => {
-    if (state.state.dead) {
-      const audio = new Audio("/audios/dead.mp3");
-      audio.volume = 0.5;
-      audio.play();
+    deadAudioRef.current = new Audio("/audios/dead.mp3");
+    deadAudioRef.current.volume = 0.5;
+    hurtAudioRef.current = new Audio("/audios/hurt.mp3");
+    hurtAudioRef.current.volume = 0.4;
+  }, []);
+
+  useEffect(() => {
+    if (state.state.dead && deadAudioRef.current) {
+      deadAudioRef.current.currentTime = 0;
+      deadAudioRef.current.play().catch(() => {});
     }
   }, [state.state.dead]);
 
   useEffect(() => {
-    if (state.state.health < 100) {
-      const audio = new Audio("/audios/hurt.mp3");
-      audio.volume = 0.4;
-      audio.play();
+    if (state.state.health < 100 && hurtAudioRef.current) {
+      hurtAudioRef.current.currentTime = 0;
+      hurtAudioRef.current.play().catch(() => {});
     }
   }, [state.state.health]);
 
