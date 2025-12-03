@@ -1,4 +1,5 @@
 import { Billboard, CameraControls, Text } from "@react-three/drei";
+import { Grave } from "./Grave";
 import { useFrame } from "@react-three/fiber";
 import { CapsuleCollider, RigidBody, vec3 } from "@react-three/rapier";
 import { isHost } from "playroomkit";
@@ -364,11 +365,15 @@ export const CharacterController = ({
       >
         <PlayerInfo state={state.state} />
         <group ref={character}>
-          <CharacterSoldier
-            color={state.state.profile?.color}
-            animation={animation}
-            weapon={weapon}
-          />
+          {state.state.eliminated ? (
+            <Grave color={state.state.profile?.color} />
+          ) : (
+            <CharacterSoldier
+              color={state.state.profile?.color}
+              animation={animation}
+              weapon={weapon}
+            />
+          )}
         </group>
         {userPlayer && (
           // Finally I moved the light to follow the player
