@@ -175,18 +175,34 @@ export const CharacterController = ({
   useFrame((_, delta) => {
     // CAMERA FOLLOW
     if (controls.current) {
-      const cameraDistanceY = isMobileView ? 16 : 20;
-      const cameraDistanceZ = isMobileView ? 12 : 16;
       const playerWorldPos = vec3(rigidbody.current.translation());
-      controls.current.setLookAt(
-        playerWorldPos.x,
-        playerWorldPos.y + (state.state.dead ? 12 : cameraDistanceY),
-        playerWorldPos.z + (state.state.dead ? 2 : cameraDistanceZ),
-        playerWorldPos.x,
-        playerWorldPos.y + 1.5,
-        playerWorldPos.z,
-        true,
-      );
+
+      // Eliminated players get a wide spectator view centered on the map
+      if (state.state.eliminated) {
+        const spectatorDistanceY = 50;
+        const spectatorDistanceZ = 40;
+        controls.current.setLookAt(
+          0,
+          spectatorDistanceY,
+          spectatorDistanceZ,
+          0,
+          0,
+          0,
+          true,
+        );
+      } else {
+        const cameraDistanceY = isMobileView ? 16 : 20;
+        const cameraDistanceZ = isMobileView ? 12 : 16;
+        controls.current.setLookAt(
+          playerWorldPos.x,
+          playerWorldPos.y + (state.state.dead ? 12 : cameraDistanceY),
+          playerWorldPos.z + (state.state.dead ? 2 : cameraDistanceZ),
+          playerWorldPos.x,
+          playerWorldPos.y + 1.5,
+          playerWorldPos.z,
+          true,
+        );
+      }
     }
 
     if (state.state.dead) {
