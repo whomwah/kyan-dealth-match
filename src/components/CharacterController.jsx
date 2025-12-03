@@ -7,6 +7,9 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { CharacterSoldier } from "./CharacterSoldier";
 const MOVEMENT_SPEED = 202;
 const FIRE_RATE = 380;
+
+// Global counter for unique bullet IDs (prevents duplicates when firing in same millisecond)
+let bulletCounter = 0;
 export const MAX_LIVES = 3;
 export const WEAPON_OFFSET = {
   x: -0.2,
@@ -287,7 +290,7 @@ export const CharacterController = ({
           if (Date.now() - lastShoot.current > FIRE_RATE) {
             lastShoot.current = Date.now();
             const newBullet = {
-              id: state.id + "-" + +new Date(),
+              id: `${state.id}-${++bulletCounter}`,
               position: vec3(rigidbody.current.translation()),
               angle: fireAngle,
               player: state.id,
