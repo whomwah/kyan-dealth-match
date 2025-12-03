@@ -95,7 +95,11 @@ export const GameCountdown = ({ isActive, onComplete }) => {
       <div className="countdown-garland">✨🔔✨🎀✨🔔✨🎀✨🔔✨</div>
 
       {/* Game title */}
-      <div className="countdown-title">Kyan Christmas Death Match</div>
+      <div className="countdown-title">
+        Kyan
+        <br />
+        Christmas Death Match
+      </div>
 
       {/* Keyboard controls - positioned on sides */}
       <ControlsLeft />

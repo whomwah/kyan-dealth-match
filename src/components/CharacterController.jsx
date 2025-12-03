@@ -382,7 +382,7 @@ export const CharacterController = ({
           }
         }}
       >
-        <PlayerInfo state={state.state} />
+        <PlayerInfo state={state.state} animation={animation} />
         <group ref={character}>
           {state.state.eliminated ? (
             <Grave color={state.state.profile?.color} />
@@ -420,11 +420,11 @@ export const CharacterController = ({
   );
 };
 
-const PlayerInfo = ({ state }) => {
+const PlayerInfo = ({ state, animation }) => {
   const health = state.health;
   const name = state.profile.name;
   return (
-    <Billboard position-y={2.5}>
+    <Billboard position-y={animation === "Death" ? 3 : 2.5}>
       <Text position-y={0.2} fontSize={0.2} textAlign="center">
         {name.toUpperCase().trim()} 🎄
       </Text>

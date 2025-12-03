@@ -175,6 +175,7 @@
   top: 5rem;
   left: 50%;
   transform: translateX(-50%);
+  text-align: center;
   font-size: 3rem;
   font-weight: 900;
   text-transform: uppercase;
