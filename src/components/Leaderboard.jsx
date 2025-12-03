@@ -1,4 +1,4 @@
-import { usePlayersList, isHost } from "playroomkit";
+import { usePlayersList, isHost, myPlayer } from "playroomkit";
 import { MAX_LIVES } from "./CharacterController";
 
 // Snowflake component for festive effect
@@ -22,6 +22,7 @@ const generateSnowflakes = (count) => {
 
 export const Leaderboard = () => {
   const players = usePlayersList(true);
+  const currentPlayer = myPlayer();
 
   const playersWithLives = players.map((player) => ({
     player,
@@ -41,6 +42,11 @@ export const Leaderboard = () => {
   const hasWinner = activePlayers === 1 && players.length > 1;
   const winner = hasWinner ? sortedPlayers[0] : null;
   const hostPlayer = isHost();
+
+  // Check if current player is eliminated
+  const isCurrentPlayerEliminated = playersWithLives.find(
+    (p) => p.player.id === currentPlayer?.id,
+  )?.isEliminated;
 
   const resetGame = () => {
     players.forEach((player) => {
@@ -114,6 +120,13 @@ export const Leaderboard = () => {
               </button>
             )}
           </div>
+        </div>
+      )}
+
+      {/* You're Eliminated message - shown when player is out but game continues */}
+      {!hasWinner && isCurrentPlayerEliminated && (
+        <div className="eliminated-message">
+          💀 You're Eliminated Sucker! 💀
         </div>
       )}
 
