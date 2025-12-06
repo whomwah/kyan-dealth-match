@@ -229,6 +229,10 @@ export const Experience = ({
     setHits((hits) => [...hits, { id: bulletId, position }]);
   };
 
+  const onExpired = (bulletId) => {
+    setBullets((bullets) => bullets.filter((bullet) => bullet.id !== bulletId));
+  };
+
   const onHitEnded = (hitId) => {
     setHits((hits) => hits.filter((h) => h.id !== hitId));
   };
@@ -270,13 +274,18 @@ export const Experience = ({
       ))}
       {(isHost() ? bullets : networkBullets).map((bullet) => (
         <Bullet
-          key={bullet.id}
+          key={`bullet-${bullet.id}`}
           {...bullet}
           onHit={(position) => onHit(bullet.id, position)}
+          onExpired={() => onExpired(bullet.id)}
         />
       ))}
       {(isHost() ? hits : networkHits).map((hit) => (
-        <BulletHit key={hit.id} {...hit} onEnded={() => onHitEnded(hit.id)} />
+        <BulletHit
+          key={`hit-${hit.id}`}
+          {...hit}
+          onEnded={() => onHitEnded(hit.id)}
+        />
       ))}
       <Environment preset="sunset" />
     </>

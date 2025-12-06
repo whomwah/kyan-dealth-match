@@ -5,6 +5,7 @@ import { MeshBasicMaterial, LatheGeometry, Vector2 } from "three";
 import { WEAPON_OFFSET } from "./CharacterController";
 
 const BULLET_SPEED = 20;
+const MAX_BULLET_DISTANCE = 10;
 
 const bulletMaterial = new MeshBasicMaterial({
   color: "#1a1a1a",
@@ -46,8 +47,9 @@ const createPlugGeometry = () => {
 
 const plugGeometry = createPlugGeometry();
 
-export const Bullet = ({ player, angle, position, onHit }) => {
+export const Bullet = ({ player, angle, position, onHit, onExpired }) => {
   const rigidbody = useRef();
+  const startPosition = useRef({ x: position.x, y: position.y, z: position.z });
 
   useEffect(() => {
     // Clone pre-loaded audio instead of creating new Audio object
@@ -60,7 +62,25 @@ export const Bullet = ({ player, angle, position, onHit }) => {
     };
 
     rigidbody.current.setLinvel(velocity, true);
-  }, [angle]);
+
+    // Check distance traveled every frame
+    const checkDistance = setInterval(() => {
+      if (!rigidbody.current) return;
+
+      const currentPos = rigidbody.current.translation();
+      const dx = currentPos.x - startPosition.current.x;
+      const dy = currentPos.y - startPosition.current.y;
+      const dz = currentPos.z - startPosition.current.z;
+      const distanceTraveled = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+      if (distanceTraveled >= MAX_BULLET_DISTANCE) {
+        rigidbody.current.setEnabled(false);
+        onExpired();
+      }
+    }, 50);
+
+    return () => clearInterval(checkDistance);
+  }, [angle, onExpired]);
 
   return (
     <group position={[position.x, position.y, position.z]} rotation-y={angle}>
